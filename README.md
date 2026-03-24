@@ -15,24 +15,7 @@
 ## 📝 Descripción
 **PrimeCinemas** es un sistema avanzado de gestión de cartelera y usuarios diseñado para ofrecer una experiencia visual de alto nivel. Este proyecto fue desarrollado como entrega final para la materia **Tecnología Web II**, enfocándose en la optimización del backend en Laravel y una interfaz *Ultra Dark Mode* con estética cinematográfica moderna.
 
----
-## 📋 Índice
-1. [Sobre el Proyecto](#-sobre-el-proyecto)
-2. [Requisitos Previos](#-requisitos-previos)
-3. [Instalación Local](#-instalacion-local)
-4. [Configuración Crítica (.env)](#%EF%B8%8F-configuracion-critica-env)
-5. [Arquitectura y Modificaciones](#-arquitectura-y-modificaciones)
-6. [Créditos](#-creditos)
-
----
-
-## 🍿 Sobre el Proyecto
-
-Sistema de gestión de cartelera y usuarios desarrollado como proyecto final para la materia de **Tecnología Web II**. 
-
-La aplicación se aleja de las plantillas genéricas para ofrecer una experiencia visual inmersiva orientada al usuario final, combinando una interfaz **Ultra Dark Mode** (estética de cine premium) con una arquitectura backend optimizada en Laravel y bases de datos relacionales personalizadas.
-
----
+----
 
 ## 🛠️ Requisitos Previos
 
