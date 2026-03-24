@@ -82,13 +82,7 @@ Configura el archivo de entorno y genera la llave de seguridad:
 5. **Preparar la Base de Datos:**
     - Abre tu gestor de base de datos (HeidiSQL, DBeaver, phpMyAdmin).
 
-   - Crea una base de datos en blanco llamada primecinemas_db.
-
-    - Ejecuta las migraciones de Laravel para construir las tablas:
-
-```bash
-php artisan migrate
-```
+   - Crea una base de datos llamada primecinemas_db.
 ---
 ### ⚙️ Configuración Crítica (.env)
 ---
