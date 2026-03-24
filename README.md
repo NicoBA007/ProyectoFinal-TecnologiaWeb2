@@ -127,3 +127,40 @@ Son el cerebro de la operación. Reciben las peticiones de las Vistas y operan s
 
 ### 4. Las Rutas (`routes/auth.php`)
 El archivo de rutas fue purgado para implementar una política de **"Seguridad por Simplicidad"**. Se eliminaron intencionalmente los controladores y rutas de recuperación de contraseña y verificación de correos, dejando únicamente los *endpoints* estrictamente necesarios (Registro, Login, Logout y Actualización de Contraseña) para mantener el sistema ligero y libre de vulnerabilidades lógicas.
+
+---
+
+## 🚑 Solución de Problemas Frecuentes (Troubleshooting)
+
+Si al instalar o correr el proyecto te encuentras con errores, revisa esta lista con las soluciones a los problemas más comunes en Windows:
+
+### 1. Error en `composer install` (Versión de PHP)
+**Error:** `Your requirements could not be resolved to an installable set of packages.`
+**Causa:** Tienes una versión de PHP antigua. Laravel y este proyecto requieren PHP 8.2 o superior.
+**Solución:** * Verifica tu versión con `php -v`.
+* Si usas Laragon o XAMPP, actualiza tu versión de PHP. Recomendamos usar **Laravel Herd** para evitar este problema.
+
+### 2. Error en `composer install` (Extensiones faltantes)
+**Error:** `The requested PHP extension ext-zip * is missing from your system.`
+**Causa:** Tu PHP no tiene habilitada alguna extensión necesaria (como zip, pdo_mysql o fileinfo).
+**Solución:** * Abre el archivo `php.ini` de tu servidor local.
+* Busca la línea `;extension=zip` (o la que te pida) y quítale el punto y coma (`;`) del principio para descomentarla. Guarda y reinicia tu servidor.
+
+### 3. Error al correr `npm install` o `npm run dev` en PowerShell
+**Error:** `npm : File C:\...\npm.ps1 cannot be loaded because running scripts is disabled on this system.`
+**Causa:** Las políticas de seguridad de Windows están bloqueando la ejecución de scripts.
+**Solución:** * Opción A: No uses PowerShell. Abre **Git Bash** o la terminal normal de comandos (CMD) y ejecuta los comandos ahí.
+* Opción B: Abre PowerShell como Administrador y ejecuta: `Set-ExecutionPolicy RemoteSigned -Scope CurrentUser`, luego escribe `S` y presiona Enter.
+
+### 4. Error 500 o Pantalla Blanca al iniciar sesión / registrarse
+**Error:** `Access Denied (Code 5)` en la carpeta `storage` o pantalla en blanco.
+**Causa:** Windows bloqueó los archivos temporales de las vistas y sesiones.
+**Solución:** * En la terminal, dentro de la carpeta del proyecto, ejecuta: `php artisan view:clear` y `php artisan cache:clear`.
+
+### 5. Error de Base de Datos al entrar a la web
+**Error:** `SQLSTATE[HY000] [1045] Access denied for user 'root'@'localhost'` o `Unknown database 'primecinemas_db'`.
+**Causa:** Las credenciales de tu archivo `.env` no coinciden con tu MySQL o no has importado el script SQL.
+**Solución:** * Revisa que `DB_DATABASE`, `DB_USERNAME` y `DB_PASSWORD` en el `.env` sean exactamente los de tu computadora local.
+* Asegúrate de haber importado el script `base_de_datos.sql` en tu gestor (HeidiSQL, etc.).
+
+---
