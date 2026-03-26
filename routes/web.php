@@ -1,18 +1,23 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UsuarioController;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
 
+// Ruta principal (Cartelera)
 Route::get('/', function () {
     return view('welcome');
 });
 
+// El Dashboard ahora es solo un panel de bienvenida (ya no carga la tabla pesada aquí)
 Route::get('/dashboard', function () {
-    $usuarios = User::all(); // Trae TODO de la tabla 'usuarios'
-    return view('dashboard', compact('usuarios'));
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
 
+// AQUÍ ESTÁ LA MAGIA: Las 7 rutas de tu CRUD de Usuarios
+Route::resource('usuarios', UsuarioController::class)->middleware(['auth']);
+
+// Rutas del Perfil de usuario (No tocar)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
