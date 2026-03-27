@@ -25,10 +25,11 @@
                         <thead class="text-xs text-gray-300 uppercase bg-gray-800/80 border-b border-gray-700">
                             <tr>
                                 <th class="px-6 py-4">ID</th>
-                                <th class="px-6 py-4">Usuario</th>
+                                <th class="px-6 py-4">Nombre Completo</th>
                                 <th class="px-6 py-4">Correo</th>
                                 <th class="px-6 py-4">Rol</th>
-                                <th class="px-6 py-4 text-center">Fecha de Registro</th>
+                                <th class="px-6 py-4 text-center">Estado</th>
+                                <th class="px-6 py-4 text-center">Registro</th>
                                 <th class="px-6 py-4 text-center">Acciones</th>
                             </tr>
                         </thead>
@@ -40,7 +41,8 @@
                                     </td>
 
                                     <td class="px-6 py-4 text-white font-semibold uppercase tracking-tight">
-                                        {{ $usuario->name }}
+                                        {{ $usuario->nombres }} {{ $usuario->apellido_paterno }}
+                                        {{ $usuario->apellido_materno }}
                                     </td>
 
                                     <td class="px-6 py-4 italic">
@@ -61,6 +63,14 @@
                                         @endif
                                     </td>
 
+                                    <td class="px-6 py-4 text-center">
+                                        @if($usuario->activo)
+                                            <span class="text-green-500 font-bold text-xs uppercase">Activo</span>
+                                        @else
+                                            <span class="text-gray-600 font-bold text-xs uppercase italic">Inactivo</span>
+                                        @endif
+                                    </td>
+
                                     <td class="px-6 py-4 text-center text-xs font-mono text-gray-500">
                                         {{ $usuario->fecha_registro }}
                                     </td>
@@ -72,13 +82,13 @@
                                         </a>
 
                                         <form action="{{ route('usuarios.destroy', $usuario->id_usuario) }}" method="POST"
-                                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ $usuario->name }}? Esta acción no se puede deshacer.');"
+                                            onsubmit="return confirm('¿Estás seguro de que deseas desactivar a {{ $usuario->nombres }}?');"
                                             class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
                                                 class="text-red-500 hover:text-red-400 font-bold text-xs uppercase tracking-wider transition-colors bg-transparent border-none cursor-pointer">
-                                                Eliminar
+                                                {{ $usuario->activo ? 'Desactivar' : 'Activar' }}
                                             </button>
                                         </form>
                                     </td>
@@ -93,9 +103,7 @@
                         {{ $usuarios->links() }}
                     </div>
                 @endif
-
             </div>
-
         </div>
     </div>
 </x-app-layout>

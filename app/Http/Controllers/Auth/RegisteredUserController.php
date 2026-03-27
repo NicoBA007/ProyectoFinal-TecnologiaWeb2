@@ -30,14 +30,20 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // 1. Validaciones
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'nombres' => ['required', 'string', 'max:100'],
+            'apellido_paterno' => ['required', 'string', 'max:100'],
+            'apellido_materno' => ['nullable', 'string', 'max:100'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // 2. Creación del usuario (nace como 'cliente' por defecto gracias a la BD)
         $user = User::create([
-            'name' => $request->name,
+            'nombres' => $request->nombres,
+            'apellido_paterno' => $request->apellido_paterno,
+            'apellido_materno' => $request->apellido_materno,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -46,6 +52,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect('/');
     }
 }

@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Muestra el formulario de edición del perfil.
      */
     public function edit(Request $request): View
     {
@@ -22,36 +22,46 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Actualiza la información del perfil del usuario.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        // 1. Llenamos el modelo con los datos validados (nombres, apellidos, email)
+        $user = $request->user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // 2. Si el email cambió, podríamos marcarlo como no verificado 
+        // (Solo si decides implementar verificación de email después)
+        if ($user->isDirty('email')) {
+            // $user->email_verified_at = null; // Opcional según tu esquema SQL
         }
 
-        $request->user()->save();
+        // 3. Guardamos los cambios
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * Desactiva la cuenta del usuario (Borrado Lógico).
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Validamos la contraseña actual por seguridad
         $request->validateWithBag('userDeletion', [
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
 
+        // Cerramos la sesión del usuario antes de desactivarlo
         Auth::logout();
 
-        $user->delete();
+        // CAMBIO CLAVE: Desactivación lógica para mantener historial de compras/críticas
+        $user->activo = false;
+        $user->save();
 
+        // Invalidamos la sesión y regeneramos el token CSRF
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
