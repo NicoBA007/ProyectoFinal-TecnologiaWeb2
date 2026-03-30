@@ -7,15 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Pais extends Model
 {
     // 1. Apuntamos a la tabla exacta
-    protected $table = 'pais';
+    protected $table = 'pais_origen';
 
-    // 2. Definimos su llave primaria
-    protected $primaryKey = 'id_pais';
+    protected $primaryKey = 'id_pais_origen';
 
     // 3. Sin timestamps automáticos
     public $timestamps = false;
 
-    // 4. Campos permitidos para inserción masiva
     protected $fillable = [
         'nombre',
         'activo'
@@ -40,6 +38,12 @@ class Pais extends Model
      */
     public function peliculas()
     {
-        return $this->belongsToMany(Pelicula::class, 'pelicula_pais', 'id_pais', 'id_pelicula');
+        // belongsToMany(ModeloDestino, TablaIntermedia, LlaveLocalEnPivote, LlaveForaneaEnPivote)
+        return $this->belongsToMany(
+            Pelicula::class,
+            'pelicula_pais_origen', 
+            'id_pais_origen', 
+            'id_pelicula'          
+        );
     }
 }

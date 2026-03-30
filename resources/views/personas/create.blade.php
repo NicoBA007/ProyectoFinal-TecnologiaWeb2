@@ -18,12 +18,6 @@
                     </div>
 
                     <div class="mb-5">
-                        <label class="block text-gray-500 text-xs font-bold mb-2 uppercase">Nacionalidad (Opcional)</label>
-                        <input type="text" name="nacionalidad" value="{{ old('nacionalidad') }}"
-                            class="w-full bg-gray-800 border-gray-700 text-white rounded-xl p-3 focus:ring-2 focus:ring-red-600 outline-none transition-all">
-                    </div>
-
-                    <div class="mb-5">
                         <label class="block text-gray-500 text-xs font-bold mb-2 uppercase">URL de la Foto</label>
                         <input type="url" name="foto_url" value="{{ old('foto_url') }}"
                             placeholder="https://ejemplo.com/foto.jpg"

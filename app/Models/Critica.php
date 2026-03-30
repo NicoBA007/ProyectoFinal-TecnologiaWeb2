@@ -21,7 +21,6 @@ class Critica extends Model
         'id_pelicula',
         'puntuacion',
         'comentario',
-        'fecha_publicacion'
     ];
 
     /**

@@ -61,7 +61,7 @@ class Pelicula extends Model
      */
     public function paises()
     {
-        return $this->belongsToMany(Pais::class, 'pelicula_pais', 'id_pelicula', 'id_pais');
+        return $this->belongsToMany(Pais::class, 'pelicula_pais_origen', 'id_pelicula', 'id_pais_origen');
     }
 
     /**
@@ -70,7 +70,8 @@ class Pelicula extends Model
     public function personas()
     {
         return $this->belongsToMany(Persona::class, 'pelicula_personal', 'id_pelicula', 'id_persona')
-            ->withPivot('rol_en_pelicula', 'papel_personaje'); // Traemos los datos extra de la tabla pivote
+            // Añadí el 'id' del pivote para que sea más fácil gestionar los roles
+            ->withPivot('id', 'rol_en_pelicula', 'papel_personaje');
     }
 
     /**

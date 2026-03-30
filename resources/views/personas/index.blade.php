@@ -150,10 +150,6 @@
                                     {{ $persona->nombre_completo }}
                                 </td>
 
-                                <td class="p-5 text-gray-400">
-                                    {{ $persona->nacionalidad ?? 'No especificada' }}
-                                </td>
-
                                 <td class="p-5">
                                     @if($persona->activo)
                                         <span

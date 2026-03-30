@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Persona; // Importamos el modelo que creamos al principio
+use App\Models\Persona;
 use Illuminate\Http\Request;
 
 class PersonaController extends Controller
@@ -30,10 +30,9 @@ class PersonaController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validamos los datos según tu script SQL
+        // 1. Validamos los datos según tu nuevo script SQL (sin nacionalidad)
         $request->validate([
             'nombre_completo' => 'required|string|max:150',
-            'nacionalidad' => 'nullable|string|max:50',
             'foto_url' => 'required|url',
             'activo' => 'required|boolean'
         ]);
@@ -41,7 +40,6 @@ class PersonaController extends Controller
         // 2. Creamos el registro
         Persona::create([
             'nombre_completo' => $request->nombre_completo,
-            'nacionalidad' => $request->nacionalidad,
             'foto_url' => $request->foto_url,
             'activo' => $request->activo,
         ]);
@@ -66,10 +64,9 @@ class PersonaController extends Controller
     {
         $persona = Persona::findOrFail($id);
 
-        // Validamos (igual que en store)
+        // Validamos (igual que en store, sin nacionalidad)
         $request->validate([
             'nombre_completo' => 'required|string|max:150',
-            'nacionalidad' => 'nullable|string|max:50',
             'foto_url' => 'required|url',
             'activo' => 'required|boolean'
         ]);

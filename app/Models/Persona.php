@@ -18,7 +18,6 @@ class Persona extends Model
     // 4. Campos que se pueden llenar masivamente desde un formulario
     protected $fillable = [
         'nombre_completo',
-        'nacionalidad',
         'foto_url',
         'activo'
     ];
