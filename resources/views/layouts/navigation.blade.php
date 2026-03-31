@@ -15,7 +15,7 @@
                         {{ __('Cartelera') }}
                     </x-nav-link>
 
-                    @if(Auth::user()->rol === 'admin')
+                    @if(Auth::check() && Auth::user()->rol === 'admin')
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')"
                             class="text-gray-300 hover:text-red-500 transition-all font-bold uppercase text-[10px] tracking-[0.2em]">
                             {{ __('Dashboard') }}
@@ -35,51 +35,60 @@
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button
-                            class="inline-flex items-center px-4 py-2 border border-gray-800 text-xs font-black uppercase tracking-widest rounded-full text-gray-300 bg-gray-800/50 hover:text-white hover:bg-gray-800 focus:outline-none transition ease-in-out duration-150 shadow-sm group">
-                            <div class="flex items-center gap-2">
-                                <div
-                                    class="w-2 h-2 rounded-full {{ Auth::user()->rol === 'admin' ? 'bg-red-600' : 'bg-green-500' }} animate-pulse">
+                @auth
+                    <x-dropdown align="right" width="48">
+                        <x-slot name="trigger">
+                            <button
+                                class="inline-flex items-center px-4 py-2 border border-gray-800 text-xs font-black uppercase tracking-widest rounded-full text-gray-300 bg-gray-800/50 hover:text-white hover:bg-gray-800 focus:outline-none transition ease-in-out duration-150 shadow-sm group">
+                                <div class="flex items-center gap-2">
+                                    <div
+                                        class="w-2 h-2 rounded-full {{ Auth::user()->rol === 'admin' ? 'bg-red-600' : 'bg-green-500' }} animate-pulse">
+                                    </div>
+                                    <div>{{ Auth::user()->nombres }} {{ Auth::user()->apellido_paterno }}</div>
                                 </div>
-                                <div>{{ Auth::user()->nombres }} {{ Auth::user()->apellido_paterno }}</div>
-                            </div>
 
-                            <div class="ms-2 transition-transform group-hover:translate-y-0.5">
-                                <svg class="fill-current h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
+                                <div class="ms-2 transition-transform group-hover:translate-y-0.5">
+                                    <svg class="fill-current h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                            </button>
+                        </x-slot>
 
-                    <x-slot name="content">
-                        <div class="bg-gray-900 border border-gray-800 rounded-md shadow-2xl overflow-hidden">
-                            <div
-                                class="block px-4 py-2 text-[10px] font-black text-gray-500 uppercase tracking-widest border-b border-gray-800">
-                                Gestión de Cuenta
-                            </div>
+                        <x-slot name="content">
+                            <div class="bg-gray-900 border border-gray-800 rounded-md shadow-2xl overflow-hidden">
+                                <div
+                                    class="block px-4 py-2 text-[10px] font-black text-gray-500 uppercase tracking-widest border-b border-gray-800">
+                                    Gestión de Cuenta
+                                </div>
 
-                            <x-dropdown-link :href="route('profile.edit')"
-                                class="text-gray-300 hover:bg-gray-800 hover:text-white">
-                                {{ __('Mi Perfil') }}
-                            </x-dropdown-link>
-
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <x-dropdown-link :href="route('logout')"
-                                    class="text-red-500 hover:bg-red-900/20 font-bold"
-                                    onclick="event.preventDefault(); this.closest('form').submit();">
-                                    {{ __('Cerrar Sesión') }}
+                                <x-dropdown-link :href="route('profile.edit')"
+                                    class="text-gray-300 hover:bg-gray-800 hover:text-white">
+                                    {{ __('Mi Perfil') }}
                                 </x-dropdown-link>
-                            </form>
-                        </div>
-                    </x-slot>
-                </x-dropdown>
+
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <x-dropdown-link :href="route('logout')"
+                                        class="text-red-500 hover:bg-red-900/20 font-bold"
+                                        onclick="event.preventDefault(); this.closest('form').submit();">
+                                        {{ __('Cerrar Sesión') }}
+                                    </x-dropdown-link>
+                                </form>
+                            </div>
+                        </x-slot>
+                    </x-dropdown>
+                @else
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('login') }}" class="text-gray-300 hover:text-white font-medium text-xs uppercase tracking-widest transition-colors">Ingresar</a>
+                        <a href="{{ route('register') }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full text-xs font-bold transition-all shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:shadow-[0_0_25px_rgba(220,38,38,0.7)] uppercase tracking-widest">
+                            Registrarse
+                        </a>
+                    </div>
+                @endauth
             </div>
 
             <div class="-me-2 flex items-center sm:hidden">
@@ -103,7 +112,7 @@
                 {{ __('Ver Cartelera') }}
             </x-responsive-nav-link>
 
-            @if(Auth::user()->rol === 'admin')
+            @if(Auth::check() && Auth::user()->rol === 'admin')
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}
                 </x-responsive-nav-link>
@@ -117,32 +126,43 @@
         </div>
 
         <div class="pt-4 pb-1 border-t border-gray-800">
-            <div class="px-4 flex items-center gap-3">
-                <div
-                    class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-black border border-gray-700">
-                    {{ substr(Auth::user()->nombres, 0, 1) }}
-                </div>
-                <div>
-                    <div class="font-black text-sm text-white uppercase">{{ Auth::user()->nombres }}
-                        {{ Auth::user()->apellido_paterno }}</div>
-                    <div class="font-medium text-[10px] text-gray-500 uppercase tracking-widest">{{ Auth::user()->rol }}
+            @auth
+                <div class="px-4 flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-black border border-gray-700">
+                        {{ substr(Auth::user()->nombres, 0, 1) }}
+                    </div>
+                    <div>
+                        <div class="font-black text-sm text-white uppercase">{{ Auth::user()->nombres }}
+                            {{ Auth::user()->apellido_paterno }}</div>
+                        <div class="font-medium text-[10px] text-gray-500 uppercase tracking-widest">{{ Auth::user()->rol }}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Mi Perfil') }}
-                </x-responsive-nav-link>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <x-responsive-nav-link :href="route('logout')" class="text-red-500"
-                        onclick="event.preventDefault(); this.closest('form').submit();">
-                        {{ __('Cerrar Sesión') }}
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link :href="route('profile.edit')">
+                        {{ __('Mi Perfil') }}
                     </x-responsive-nav-link>
-                </form>
-            </div>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <x-responsive-nav-link :href="route('logout')" class="text-red-500"
+                            onclick="event.preventDefault(); this.closest('form').submit();">
+                            {{ __('Cerrar Sesión') }}
+                        </x-responsive-nav-link>
+                    </form>
+                </div>
+            @else
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link :href="route('login')">
+                        {{ __('Ingresar') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('register')" class="text-red-500">
+                        {{ __('Registrarse') }}
+                    </x-responsive-nav-link>
+                </div>
+            @endauth
         </div>
     </div>
 </nav>

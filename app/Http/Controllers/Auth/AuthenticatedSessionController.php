@@ -11,37 +11,44 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
-    public function create(): View
-    {
-        return view('auth.login');
+  /**
+   * Display the login view.
+   */
+  public function create(): View
+  {
+    return view('auth.login');
+  }
+
+  /**
+   * Handle an incoming authentication request.
+   */
+  public function store(LoginRequest $request): RedirectResponse
+  {
+    $request->authenticate();
+
+    $request->session()->regenerate();
+
+    // LÓGICA DE REDIRECCIÓN POR ROL
+    if ($request->user()->rol === 'admin') {
+      // Si es admin, al panel de control
+      return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
+    // Si es cliente (o cualquier otro rol), a la cartelera pública
+    return redirect()->intended(route('cartelera.index', absolute: false));
+  }
 
-        $request->session()->regenerate();
+  /**
+   * Destroy an authenticated session.
+   */
+  public function destroy(Request $request): RedirectResponse
+  {
+    Auth::guard('web')->logout();
 
-        return redirect()->intended(route('dashboard', absolute: false));
-    }
+    $request->session()->invalidate();
 
-    /**
-     * Destroy an authenticated session.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        Auth::guard('web')->logout();
+    $request->session()->regenerateToken();
 
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        return redirect('/');
-    }
+    return redirect('/');
+  }
 }

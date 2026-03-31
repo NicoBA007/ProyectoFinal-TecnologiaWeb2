@@ -15,43 +15,43 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
-    public function create(): View
-    {
-        return view('auth.register');
-    }
+  /**
+   * Display the registration view.
+   */
+  public function create(): View
+  {
+    return view('auth.register');
+  }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        // 1. Validaciones
-        $request->validate([
-            'nombres' => ['required', 'string', 'max:100'],
-            'apellido_paterno' => ['required', 'string', 'max:100'],
-            'apellido_materno' => ['nullable', 'string', 'max:100'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:' . User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+  /**
+   * Handle an incoming registration request.
+   *
+   * @throws ValidationException
+   */
+  public function store(Request $request): RedirectResponse
+  {
+    // 1. Validaciones
+    $request->validate([
+      'nombres' => ['required', 'string', 'max:100'],
+      'apellido_paterno' => ['required', 'string', 'max:100'],
+      'apellido_materno' => ['nullable', 'string', 'max:100'],
+      'email' => ['required', 'string', 'lowercase', 'email', 'max:100', 'unique:' . User::class],
+      'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    ]);
 
-        // 2. Creación del usuario (nace como 'cliente' por defecto gracias a la BD)
-        $user = User::create([
-            'nombres' => $request->nombres,
-            'apellido_paterno' => $request->apellido_paterno,
-            'apellido_materno' => $request->apellido_materno,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+    // 2. Creación del usuario (nace como 'cliente' por defecto gracias a la BD)
+    $user = User::create([
+      'nombres' => $request->nombres,
+      'apellido_paterno' => $request->apellido_paterno,
+      'apellido_materno' => $request->apellido_materno,
+      'email' => $request->email,
+      'password' => Hash::make($request->password),
+    ]);
 
-        event(new Registered($user));
+    event(new Registered($user));
 
-        Auth::login($user);
+    Auth::login($user);
 
-        return redirect('/');
-    }
+    return redirect()->route('cartelera.index');
+  }
 }
