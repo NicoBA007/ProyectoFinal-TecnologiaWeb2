@@ -3,94 +3,73 @@
 namespace App\Http\Controllers;
 
 use App\Models\Persona;
+use App\DTOs\PersonaDTO;
+use App\Http\Requests\StorePersonaAjaxRequest;
+use App\Http\Requests\UpdatePersonaAjaxRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class PersonaController extends Controller
 {
-    /**
-     * Muestra el listado de actores y staff.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        // Traemos a todos ordenados por el más reciente
-        $personas = Persona::orderBy('id_persona', 'desc')->get();
-        return view('personas.index', compact('personas'));
+        if ($request->wantsJson()) {
+            try {
+                $datos = Persona::orderBy('nombre_completo', 'asc')->get();
+                $dtos = $datos->map(fn($item) => PersonaDTO::fromModel($item));
+                return response()->json(['success' => true, 'data' => $dtos]);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'Error al cargar datos.'], 500);
+            }
+        }
+        return view('personas.index');
     }
 
-    /**
-     * Muestra el formulario para crear un nuevo talento.
-     */
-    public function create()
+    public function store(StorePersonaAjaxRequest $request): JsonResponse
     {
-        return view('personas.create');
+        try {
+            $persona = Persona::create([
+                'nombre_completo' => $request->nombre_completo,
+                'foto_url' => $request->foto_url,
+                'activo' => true
+            ]);
+            return response()->json(['success' => true, 'message' => 'Creado.', 'data' => PersonaDTO::fromModel($persona)], 201);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al guardar.'], 500);
+        }
     }
 
-    /**
-     * Guarda el nuevo registro en la base de datos.
-     */
-    public function store(Request $request)
+    public function update(UpdatePersonaAjaxRequest $request, string $id): JsonResponse
     {
-        // 1. Validamos los datos según tu nuevo script SQL (sin nacionalidad)
-        $request->validate([
-            'nombre_completo' => 'required|string|max:150',
-            'foto_url' => 'required|url',
-            'activo' => 'required|boolean'
-        ]);
-
-        // 2. Creamos el registro
-        Persona::create([
-            'nombre_completo' => $request->nombre_completo,
-            'foto_url' => $request->foto_url,
-            'activo' => $request->activo,
-        ]);
-
-        return redirect()->route('personas.index')
-            ->with('success', 'Talento registrado correctamente en el elenco.');
+        try {
+            $persona = Persona::findOrFail($id);
+            $persona->update([
+                'nombre_completo' => $request->nombre_completo,
+                'foto_url' => $request->foto_url
+            ]);
+            return response()->json(['success' => true, 'message' => 'Actualizado.', 'data' => PersonaDTO::fromModel($persona)]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al actualizar.'], 500);
+        }
     }
 
-    /**
-     * Muestra el formulario de edición.
-     */
-    public function edit($id)
+    public function destroy(string $id): JsonResponse
     {
-        $persona = Persona::findOrFail($id);
-        return view('personas.edit', compact('persona'));
+        try {
+            Persona::findOrFail($id)->update(['activo' => false]);
+            return response()->json(['success' => true, 'message' => 'Desactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al desactivar.'], 500);
+        }
     }
 
-    /**
-     * Actualiza los datos en la base de datos.
-     */
-    public function update(Request $request, $id)
+    public function reactivar(string $id): JsonResponse
     {
-        $persona = Persona::findOrFail($id);
-
-        // Validamos (igual que en store, sin nacionalidad)
-        $request->validate([
-            'nombre_completo' => 'required|string|max:150',
-            'foto_url' => 'required|url',
-            'activo' => 'required|boolean'
-        ]);
-
-        // Actualizamos los campos
-        $persona->update($request->all());
-
-        return redirect()->route('personas.index')
-            ->with('success', 'Los datos de ' . $persona->nombre_completo . ' han sido actualizados.');
-    }
-
-    /**
-     * Cambia el estado de la persona (Borrado lógico).
-     */
-    public function destroy($id)
-    {
-        $persona = Persona::findOrFail($id);
-
-        // Alternamos el estado: si estaba activo (1), pasa a inactivo (0) y viceversa
-        $persona->activo = !$persona->activo;
-        $persona->save();
-
-        $mensaje = $persona->activo ? 'Talento reactivado.' : 'Talento desactivado del elenco.';
-
-        return redirect()->route('personas.index')->with('success', $mensaje);
+        try {
+            Persona::findOrFail($id)->update(['activo' => true]);
+            return response()->json(['success' => true, 'message' => 'Reactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al reactivar.'], 500);
+        }
     }
 }

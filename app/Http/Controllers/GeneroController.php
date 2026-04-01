@@ -3,61 +3,66 @@
 namespace App\Http\Controllers;
 
 use App\Models\Genero;
+use App\DTOs\GeneroDTO;
+use App\Http\Requests\StoreGeneroAjaxRequest;
+use App\Http\Requests\UpdateGeneroAjaxRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class GeneroController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $generos = Genero::orderBy('nombre', 'asc')->get();
-        return view('generos.index', compact('generos'));
+        if ($request->wantsJson()) {
+            try {
+                $generos = Genero::orderBy('nombre', 'asc')->get();
+                $dtos = $generos->map(fn($g) => GeneroDTO::fromModel($g));
+                return response()->json(['success' => true, 'data' => $dtos]);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'Error al cargar géneros.'], 500);
+            }
+        }
+        return view('generos.index');
     }
 
-    public function create()
+    public function store(StoreGeneroAjaxRequest $request): JsonResponse
     {
-        return view('generos.create');
+        try {
+            $genero = Genero::create(['nombre' => $request->nombre, 'activo' => true]);
+            return response()->json(['success' => true, 'message' => 'Género creado.', 'data' => GeneroDTO::fromModel($genero)], 201);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al guardar.'], 500);
+        }
     }
 
-    public function store(Request $request)
+    public function update(UpdateGeneroAjaxRequest $request, string $id): JsonResponse
     {
-        $request->validate([
-            'nombre' => 'required|string|max:80|unique:genero,nombre',
-            'activo' => 'required|boolean'
-        ]);
-
-        Genero::create($request->all());
-
-        return redirect()->route('generos.index')->with('success', 'Género registrado exitosamente.');
+        try {
+            $genero = Genero::findOrFail($id);
+            $genero->update(['nombre' => $request->nombre]);
+            return response()->json(['success' => true, 'message' => 'Género actualizado.', 'data' => GeneroDTO::fromModel($genero)]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al actualizar.'], 500);
+        }
     }
 
-    public function edit($id)
+    public function destroy(string $id): JsonResponse
     {
-        $genero = Genero::findOrFail($id);
-        return view('generos.edit', compact('genero'));
+        try {
+            Genero::findOrFail($id)->update(['activo' => false]);
+            return response()->json(['success' => true, 'message' => 'Género desactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al desactivar.'], 500);
+        }
     }
 
-    public function update(Request $request, $id)
+    public function reactivar(string $id): JsonResponse
     {
-        $genero = Genero::findOrFail($id);
-
-        $request->validate([
-            // Ignoramos el ID actual para la regla unique
-            'nombre' => 'required|string|max:80|unique:genero,nombre,' . $genero->id_genero . ',id_genero',
-            'activo' => 'required|boolean'
-        ]);
-
-        $genero->update($request->all());
-
-        return redirect()->route('generos.index')->with('success', 'Género actualizado correctamente.');
-    }
-
-    public function destroy($id)
-    {
-        $genero = Genero::findOrFail($id);
-        $genero->activo = !$genero->activo;
-        $genero->save();
-
-        $mensaje = $genero->activo ? 'Género activado.' : 'Género desactivado.';
-        return redirect()->route('generos.index')->with('success', $mensaje);
+        try {
+            Genero::findOrFail($id)->update(['activo' => true]);
+            return response()->json(['success' => true, 'message' => 'Género reactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al reactivar.'], 500);
+        }
     }
 }

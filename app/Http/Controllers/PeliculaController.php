@@ -4,142 +4,143 @@ namespace App\Http\Controllers;
 
 use App\Models\Pelicula;
 use App\Models\Clasificacion;
-use App\Models\Genero;
-use App\Models\Pais;
-use App\Models\Persona;
+use App\DTOs\PeliculaDTO;
+use App\Http\Requests\StorePeliculaAjaxRequest;
+use App\Http\Requests\UpdatePeliculaAjaxRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class PeliculaController extends Controller
 {
-    /**
-     * Muestra el catálogo de películas (Panel Admin)
-     */
-    public function index()
-    {
-        // Traemos las películas con su clasificación para evitar múltiples consultas (Eager Loading)
-        $peliculas = Pelicula::with('clasificacion')->orderBy('id_pelicula', 'desc')->get();
-        return view('peliculas.index', compact('peliculas'));
+  public function index(Request $request)
+  {
+    if ($request->wantsJson()) {
+      try {
+        $datos = Pelicula::with(['clasificacion', 'generos', 'paises'])->orderBy('id_pelicula', 'desc')->get();
+        $dtos = $datos->map(fn($item) => PeliculaDTO::fromModel($item));
+        return response()->json(['success' => true, 'data' => $dtos]);
+      } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+      }
     }
+    // Traemos los catálogos activos para inyectarlos en los Checkboxes del formulario
+    $clasificaciones = Clasificacion::where('activo', true)->get();
+    $generos = \App\Models\Genero::where('activo', true)->orderBy('nombre', 'asc')->get();
+    $paises = \App\Models\Pais::where('activo', true)->orderBy('nombre', 'asc')->get();
 
-    /**
-     * Muestra el formulario para crear una película
-     */
-    public function create()
-    {
-        // Necesitamos mandar los catálogos a la vista para llenar los <select> y checkboxes
-        $clasificaciones = Clasificacion::where('activo', true)->get();
-        $generos = Genero::where('activo', true)->orderBy('nombre')->get();
-        $paises = Pais::where('activo', true)->orderBy('nombre')->get();
+    return view('peliculas.index', compact('clasificaciones', 'generos', 'paises'));
+  }
 
-        return view('peliculas.create', compact('clasificaciones', 'generos', 'paises'));
+  public function store(StorePeliculaAjaxRequest $request): JsonResponse
+  {
+    try {
+      $data = $request->validated();
+      $data['activo'] = true;
+      $pelicula = Pelicula::create($data);
+
+      $pelicula->generos()->sync($request->generos);
+      $pelicula->paises()->sync($request->paises);
+
+      return response()->json(['success' => true, 'message' => 'Creada con géneros y países.', 'data' => PeliculaDTO::fromModel($pelicula)], 201);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error al guardar.'], 500);
     }
+  }
 
-    /**
-     * Guarda la película y sus relaciones (N:M) de géneros y países
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'titulo' => 'required|string|max:150',
-            'sinopsis' => 'required|string',
-            'id_clasificacion' => 'required|exists:clasificacion,id_clasificacion',
-            'duracion_min' => 'required|integer|min:1',
-            'estado' => 'required|in:Proximamente,En Emision,Ya Emitida',
-            'poster_url' => 'required|url',
-            'trailer_url' => 'required|url',
-            'fecha_estreno' => 'required|date',
-            'activo' => 'required|boolean',
-            'generos' => 'nullable|array', 
-            'paises' => 'nullable|array'   
-        ]);
+  public function update(UpdatePeliculaAjaxRequest $request, string $id): JsonResponse
+  {
+    try {
+      $pelicula = Pelicula::findOrFail($id);
+      $pelicula->update($request->validated());
 
-        // 1. Creamos la película (ignorando temporalmente los arrays de generos y paises)
-        $pelicula = Pelicula::create($request->except(['generos', 'paises']));
+      $pelicula->generos()->sync($request->generos);
+      $pelicula->paises()->sync($request->paises);
 
-        // 2. Sincronizamos las tablas intermedias (Magia de Laravel)
-        if ($request->has('generos')) {
-            $pelicula->generos()->sync($request->generos);
-        }
-
-        if ($request->has('paises')) {
-            $pelicula->paises()->sync($request->paises);
-        }
-
-        // 3. Redirigimos a la vista de "Detalles" (show) para que el admin pueda agregar el elenco
-        return redirect()->route('peliculas.show', $pelicula->id_pelicula)
-            ->with('success', 'Película guardada. Ahora puedes asignar al elenco y staff.');
+      return response()->json(['success' => true, 'message' => 'Actualizada con éxito.', 'data' => PeliculaDTO::fromModel($pelicula)]);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error al actualizar.'], 500);
     }
+  }
 
-    /**
-     * Muestra los detalles de una película específica, su elenco y críticas
-     */
-    public function show($id)
-    {
-        // Traemos la película con TODAS sus relaciones armadas
-        $pelicula = Pelicula::with(['clasificacion', 'generos', 'paises', 'personas', 'criticas.usuario'])
-            ->findOrFail($id);
-
-        // Catálogo de personas para el <select> de "Agregar al elenco"
-        $personas = Persona::where('activo', true)->orderBy('nombre_completo')->get();
-
-        return view('peliculas.show', compact('pelicula', 'personas'));
+  public function destroy(string $id): JsonResponse
+  {
+    try {
+      Pelicula::findOrFail($id)->update(['activo' => false]);
+      return response()->json(['success' => true, 'message' => 'Desactivada.']);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error.'], 500);
     }
+  }
 
-    /**
-     * Muestra el formulario para editar la película base
-     */
-    public function edit($id)
-    {
-        $pelicula = Pelicula::with(['generos', 'paises'])->findOrFail($id);
-
-        $clasificaciones = Clasificacion::where('activo', true)->get();
-        $generos = Genero::where('activo', true)->orderBy('nombre')->get();
-        $paises = Pais::where('activo', true)->orderBy('nombre')->get();
-
-        return view('peliculas.edit', compact('pelicula', 'clasificaciones', 'generos', 'paises'));
+  public function reactivar(string $id): JsonResponse
+  {
+    try {
+      Pelicula::findOrFail($id)->update(['activo' => true]);
+      return response()->json(['success' => true, 'message' => 'Reactivada.']);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error.'], 500);
     }
+  }
 
-    /**
-     * Actualiza la película y sus relaciones (N:M)
-     */
-    public function update(Request $request, $id)
-    {
-        $pelicula = Pelicula::findOrFail($id);
+  // --- GESTIÓN DE RELACIONES (PIVOTES) ---
 
-        $request->validate([
-            'titulo' => 'required|string|max:150',
-            'sinopsis' => 'required|string',
-            'id_clasificacion' => 'required|exists:clasificacion,id_clasificacion',
-            'duracion_min' => 'required|integer|min:1',
-            'estado' => 'required|in:Proximamente,En Emision,Ya Emitida',
-            'poster_url' => 'required|url',
-            'trailer_url' => 'required|url',
-            'fecha_estreno' => 'required|date',
-            'activo' => 'required|boolean',
-            'generos' => 'nullable|array',
-            'paises' => 'nullable|array'
-        ]);
+  public function detalles(string $id): JsonResponse
+  {
+    try {
+      $pelicula = Pelicula::with(['personas'])->findOrFail($id);
+      // Traemos solo las personas activas para el selector
+      $personas = \App\Models\Persona::where('activo', true)->orderBy('nombre_completo', 'asc')->get();
 
-        $pelicula->update($request->except(['generos', 'paises']));
-
-        // El método sync() actualiza automáticamente la tabla pivote borrando los que ya no están y agregando los nuevos
-        $pelicula->generos()->sync($request->generos ?? []);
-        $pelicula->paises()->sync($request->paises ?? []);
-
-        return redirect()->route('peliculas.show', $pelicula->id_pelicula)
-            ->with('success', 'Datos de la película actualizados.');
+      return response()->json([
+        'success' => true,
+        'elenco' => $pelicula->personas,
+        'personas_disponibles' => $personas
+      ]);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error al cargar detalles.'], 500);
     }
+  }
 
-    /**
-     * Desactiva la película 
-     */
-    public function destroy($id)
-    {
-        $pelicula = Pelicula::findOrFail($id);
-        $pelicula->activo = !$pelicula->activo;
-        $pelicula->save();
+  public function agregarElenco(Request $request, string $id): JsonResponse
+  {
+    try {
+      $request->validate([
+        'id_persona' => 'required|exists:persona,id_persona',
+        'rol_en_pelicula' => 'required|string|max:50',
+        'papel_personaje' => 'nullable|string|max:100'
+      ]);
 
-        $mensaje = $pelicula->activo ? 'Película reactivada.' : 'Película archivada.';
-        return redirect()->route('peliculas.index')->with('success', $mensaje);
+      $pelicula = Pelicula::findOrFail($id);
+
+      // Validamos que no se duplique el mismo rol para la misma persona (Tu UNIQUE de BD)
+      $existe = $pelicula->personas()
+        ->where('pelicula_personal.id_persona', $request->id_persona)
+        ->where('pelicula_personal.rol_en_pelicula', $request->rol_en_pelicula)
+        ->exists();
+
+      if ($existe) {
+        return response()->json(['success' => false, 'message' => 'Esta persona ya tiene este rol registrado en la película.'], 400);
+      }
+
+      $pelicula->personas()->attach($request->id_persona, [
+        'rol_en_pelicula' => $request->rol_en_pelicula,
+        'papel_personaje' => $request->papel_personaje
+      ]);
+
+      return response()->json(['success' => true, 'message' => 'Talento añadido al elenco correctamente.']);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error al añadir talento.'], 500);
     }
+  }
+
+  public function removerElenco(string $id_pelicula, string $pivot_id): JsonResponse
+  {
+    try {
+      // Eliminamos usando el ID único de la tabla pivote que creaste en tu DB
+      \Illuminate\Support\Facades\DB::table('pelicula_personal')->where('id', $pivot_id)->delete();
+      return response()->json(['success' => true, 'message' => 'Rol removido del elenco.']);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error al remover talento.'], 500);
+    }
+  }
 }

@@ -2,102 +2,105 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User; 
+use App\Models\User;
+use App\DTOs\UsuarioDTO;
+use App\Http\Requests\StoreUsuarioAjaxRequest;
+use App\Http\Requests\UpdateUsuarioAjaxRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash; 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
 
 class UsuarioController extends Controller
 {
-    public function index()
-    {
-        $usuarios = User::orderBy('id_usuario', 'desc')->paginate(10);
-        return view('usuarios.index', compact('usuarios'));
+  // Devuelve la vista HTML o el JSON con la lista de usuarios (Punto 3.8.2 y DTO)
+  public function index(Request $request)
+  {
+    if ($request->wantsJson()) {
+      try {
+        $usuarios = User::orderBy('id_usuario', 'desc')->get();
+        // Pasamos la data por el DTO por seguridad antes de enviarla
+        $dtos = $usuarios->map(fn($u) => UsuarioDTO::fromModel($u));
+
+        return response()->json(['success' => true, 'data' => $dtos]);
+      } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => 'Error al cargar usuarios.'], 500);
+      }
     }
 
-    public function create()
-    {
-        return view('usuarios.create');
+    return view('usuarios.index');
+  }
+
+  // Guarda un nuevo usuario validado y devuelve JSON (Puntos 3.8.3, 3.9.2, 3.9.3)
+  public function store(StoreUsuarioAjaxRequest $request): JsonResponse
+  {
+    try {
+      $datos = $request->validated();
+      $datos['password'] = Hash::make($datos['password']);
+      $datos['activo'] = true;
+
+      $usuario = User::create($datos);
+
+      return response()->json([
+        'success' => true,
+        'message' => 'Usuario creado exitosamente.',
+        'data' => UsuarioDTO::fromModel($usuario)
+      ], 201);
+
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error del servidor al guardar.'], 500);
     }
+  }
 
-    public function store(Request $request)
-    {
-        // 1. Validamos usando los NUEVOS campos de la base de datos
-        $request->validate([
-            'nombres' => 'required|string|max:100',
-            'apellido_paterno' => 'required|string|max:100',
-            'apellido_materno' => 'nullable|string|max:100', // Nullable porque en SQL no le pusiste NOT NULL
-            'email' => 'required|email|unique:usuario,email', // Apuntamos a la tabla 'usuario'
-            'password' => 'required|string|min:8|confirmed',
-            'rol' => 'required|in:admin,cliente' 
-        ]);
+  // Actualiza un usuario y devuelve JSON
+  public function update(UpdateUsuarioAjaxRequest $request, string $id): JsonResponse
+  {
+    try {
+      $usuario = User::findOrFail($id);
+      $datos = $request->validated();
 
-        // 2. Guardamos con la nueva estructura
-        User::create([
-            'nombres' => $request->nombres,
-            'apellido_paterno' => $request->apellido_paterno,
-            'apellido_materno' => $request->apellido_materno,
-            'email' => $request->email,
-            'password' => Hash::make($request->password), 
-            'rol' => $request->rol,
-            'activo' => true // Por defecto lo creamos activo
-        ]);
+      if ($request->filled('password')) {
+        $datos['password'] = Hash::make($datos['password']);
+      } else {
+        unset($datos['password']);
+      }
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuario creado exitosamente.');
+      $usuario->update($datos);
+
+      return response()->json([
+        'success' => true,
+        'message' => 'Usuario actualizado.',
+        'data' => UsuarioDTO::fromModel($usuario)
+      ]);
+
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error del servidor al actualizar.'], 500);
     }
+  }
 
-    public function show(string $id)
-    {
-        return redirect()->route('usuarios.index');
+  // Desactiva un usuario (Soft Delete lógico) y devuelve JSON
+  public function destroy(string $id): JsonResponse
+  {
+    try {
+      $usuario = User::findOrFail($id);
+      $usuario->update(['activo' => false]);
+
+      return response()->json(['success' => true, 'message' => 'Usuario desactivado correctamente.']);
+
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error del servidor al eliminar.'], 500);
     }
+  }
+  // Reactiva un usuario y devuelve JSON
+  public function reactivar(string $id): JsonResponse
+  {
+    try {
+      $usuario = User::findOrFail($id);
+      $usuario->update(['activo' => true]);
 
-    public function edit(string $id)
-    {
-        $usuario = User::findOrFail($id);
-        return view('usuarios.edit', compact('usuario'));
+      return response()->json(['success' => true, 'message' => 'Usuario reactivado correctamente.']);
+
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'message' => 'Error del servidor al reactivar.'], 500);
     }
-
-    public function update(Request $request, string $id)
-    {
-        $usuario = User::findOrFail($id);
-
-        $reglas = [
-            'nombres' => 'required|string|max:100',
-            'apellido_paterno' => 'required|string|max:100',
-            'apellido_materno' => 'nullable|string|max:100',
-            'email' => 'required|email|unique:usuario,email,' . $id . ',id_usuario',
-            'rol' => 'required|in:admin,cliente'
-        ];
-
-        if ($request->filled('password')) {
-            $reglas['password'] = 'required|string|min:8|confirmed';
-        }
-
-        $request->validate($reglas);
-
-        // 3. Actualizamos los nuevos campos
-        $usuario->nombres = $request->nombres;
-        $usuario->apellido_paterno = $request->apellido_paterno;
-        $usuario->apellido_materno = $request->apellido_materno;
-        $usuario->email = $request->email;
-        $usuario->rol = $request->rol;
-
-        if ($request->filled('password')) {
-            $usuario->password = Hash::make($request->password);
-        }
-
-        $usuario->save();
-
-        return redirect()->route('usuarios.index')->with('success', 'Usuario actualizado correctamente.');
-    }
-
-    public function destroy(string $id)
-    {
-        $usuario = User::findOrFail($id);
-        
-        // En lugar de borrarlo físicamente (delete), lo desactivamos por seguridad (Soft Delete lógico)
-        $usuario->activo = false;
-        $usuario->save();
-
-        return redirect()->route('usuarios.index')->with('success', 'Usuario desactivado correctamente.');
-    }
+  }
 }

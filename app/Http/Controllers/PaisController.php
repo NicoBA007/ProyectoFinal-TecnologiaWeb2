@@ -2,62 +2,67 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pais; // Usando el nombre exacto de tu modelo
+use App\Models\Pais;
+use App\DTOs\PaisDTO;
+use App\Http\Requests\StorePaisAjaxRequest;
+use App\Http\Requests\UpdatePaisAjaxRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class PaisController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $paises = Pais::orderBy('nombre', 'asc')->get();
-        return view('paises.index', compact('paises'));
+        if ($request->wantsJson()) {
+            try {
+                $datos = Pais::orderBy('nombre', 'asc')->get();
+                $dtos = $datos->map(fn($item) => PaisDTO::fromModel($item));
+                return response()->json(['success' => true, 'data' => $dtos]);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'Error al cargar datos.'], 500);
+            }
+        }
+        return view('paises.index');
     }
 
-    public function create()
+    public function store(StorePaisAjaxRequest $request): JsonResponse
     {
-        return view('paises.create');
+        try {
+            $pais = Pais::create(['nombre' => $request->nombre, 'activo' => true]);
+            return response()->json(['success' => true, 'message' => 'Creado.', 'data' => PaisDTO::fromModel($pais)], 201);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al guardar.'], 500);
+        }
     }
 
-    public function store(Request $request)
+    public function update(UpdatePaisAjaxRequest $request, string $id): JsonResponse
     {
-        $request->validate([
-            'nombre' => 'required|string|max:100|unique:pais_origen,nombre',
-            'activo' => 'required|boolean'
-        ]);
-
-        Pais::create($request->all());
-
-        return redirect()->route('paises.index')->with('success', 'País registrado exitosamente.');
+        try {
+            $pais = Pais::findOrFail($id);
+            $pais->update(['nombre' => $request->nombre]);
+            return response()->json(['success' => true, 'message' => 'Actualizado.', 'data' => PaisDTO::fromModel($pais)]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al actualizar.'], 500);
+        }
     }
 
-    public function edit($id)
+    public function destroy(string $id): JsonResponse
     {
-        $pais = Pais::findOrFail($id);
-        return view('paises.edit', compact('pais'));
+        try {
+            Pais::findOrFail($id)->update(['activo' => false]);
+            return response()->json(['success' => true, 'message' => 'Desactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al desactivar.'], 500);
+        }
     }
 
-    public function update(Request $request, $id)
+    public function reactivar(string $id): JsonResponse
     {
-        $pais = Pais::findOrFail($id);
-
-        $request->validate([
-            // Asegúrate de que el modelo Pais tenga configurado $primaryKey = 'id_pais_origen';
-            'nombre' => 'required|string|max:100|unique:pais_origen,nombre,' . $pais->id_pais_origen . ',id_pais_origen',
-            'activo' => 'required|boolean'
-        ]);
-
-        $pais->update($request->all());
-
-        return redirect()->route('paises.index')->with('success', 'País actualizado correctamente.');
-    }
-
-    public function destroy($id)
-    {
-        $pais = Pais::findOrFail($id);
-        $pais->activo = !$pais->activo;
-        $pais->save();
-
-        $mensaje = $pais->activo ? 'País activado.' : 'País desactivado.';
-        return redirect()->route('paises.index')->with('success', $mensaje);
+        try {
+            Pais::findOrFail($id)->update(['activo' => true]);
+            return response()->json(['success' => true, 'message' => 'Reactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al reactivar.'], 500);
+        }
     }
 }

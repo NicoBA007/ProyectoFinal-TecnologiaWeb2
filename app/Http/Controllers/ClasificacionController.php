@@ -3,62 +3,73 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clasificacion;
+use App\DTOs\ClasificacionDTO;
+use App\Http\Requests\StoreClasificacionAjaxRequest;
+use App\Http\Requests\UpdateClasificacionAjaxRequest;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ClasificacionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $clasificaciones = Clasificacion::orderBy('codigo', 'asc')->get();
-        return view('clasificaciones.index', compact('clasificaciones'));
+        if ($request->wantsJson()) {
+            try {
+                $datos = Clasificacion::orderBy('codigo', 'asc')->get();
+                $dtos = $datos->map(fn($item) => ClasificacionDTO::fromModel($item));
+                return response()->json(['success' => true, 'data' => $dtos]);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'Error al cargar datos.'], 500);
+            }
+        }
+        return view('clasificaciones.index');
     }
 
-    public function create()
+    public function store(StoreClasificacionAjaxRequest $request): JsonResponse
     {
-        return view('clasificaciones.create');
+        try {
+            $clasificacion = Clasificacion::create([
+                'codigo' => $request->codigo, 
+                'descripcion' => $request->descripcion, 
+                'activo' => true
+            ]);
+            return response()->json(['success' => true, 'message' => 'Creado.', 'data' => ClasificacionDTO::fromModel($clasificacion)], 201);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al guardar.'], 500);
+        }
     }
 
-    public function store(Request $request)
+    public function update(UpdateClasificacionAjaxRequest $request, string $id): JsonResponse
     {
-        $request->validate([
-            'codigo' => 'required|string|max:10|unique:clasificacion,codigo',
-            'descripcion' => 'required|string|max:100',
-            'activo' => 'required|boolean'
-        ]);
-
-        Clasificacion::create($request->all());
-
-        return redirect()->route('clasificaciones.index')->with('success', 'Clasificación registrada exitosamente.');
+        try {
+            $clasificacion = Clasificacion::findOrFail($id);
+            $clasificacion->update([
+                'codigo' => $request->codigo, 
+                'descripcion' => $request->descripcion
+            ]);
+            return response()->json(['success' => true, 'message' => 'Actualizado.', 'data' => ClasificacionDTO::fromModel($clasificacion)]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al actualizar.'], 500);
+        }
     }
 
-    public function edit($id)
+    public function destroy(string $id): JsonResponse
     {
-        $clasificacion = Clasificacion::findOrFail($id);
-        return view('clasificaciones.edit', compact('clasificacion'));
+        try {
+            Clasificacion::findOrFail($id)->update(['activo' => false]);
+            return response()->json(['success' => true, 'message' => 'Desactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al desactivar.'], 500);
+        }
     }
 
-    public function update(Request $request, $id)
+    public function reactivar(string $id): JsonResponse
     {
-        $clasificacion = Clasificacion::findOrFail($id);
-
-        $request->validate([
-            'codigo' => 'required|string|max:10|unique:clasificacion,codigo,' . $clasificacion->id_clasificacion . ',id_clasificacion',
-            'descripcion' => 'required|string|max:100',
-            'activo' => 'required|boolean'
-        ]);
-
-        $clasificacion->update($request->all());
-
-        return redirect()->route('clasificaciones.index')->with('success', 'Clasificación actualizada correctamente.');
-    }
-
-    public function destroy($id)
-    {
-        $clasificacion = Clasificacion::findOrFail($id);
-        $clasificacion->activo = !$clasificacion->activo;
-        $clasificacion->save();
-
-        $mensaje = $clasificacion->activo ? 'Clasificación activada.' : 'Clasificación desactivada.';
-        return redirect()->route('clasificaciones.index')->with('success', $mensaje);
+        try {
+            Clasificacion::findOrFail($id)->update(['activo' => true]);
+            return response()->json(['success' => true, 'message' => 'Reactivado.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al reactivar.'], 500);
+        }
     }
 }

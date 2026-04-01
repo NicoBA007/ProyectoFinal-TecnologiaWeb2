@@ -34,44 +34,50 @@ Route::get('/cartelera/{id}', [CarteleraController::class, 'show'])->name('carte
 // ==========================================
 Route::middleware('auth')->group(function () {
 
-    // --- Dashboard (Panel de bienvenida para el Admin) ---
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+  // --- Dashboard (Panel de bienvenida para el Admin) ---
+  Route::get('/dashboard', function () {
+    return view('dashboard');
+  })->name('dashboard');
 
 
-    // --- ACCIONES DEL CLIENTE ---
-    // Rutas exclusivas para dejar una reseña (debes estar logueado para verlas)
-    Route::get('/cartelera/{id}/calificar', [CarteleraController::class, 'crearCritica'])->name('cartelera.calificar');
-    Route::post('/cartelera/{id}/calificar', [CarteleraController::class, 'guardarCritica'])->name('cartelera.guardar_critica');
+  // --- ACCIONES DEL CLIENTE ---
+  // Rutas exclusivas para dejar una reseña (debes estar logueado para verlas)
+  Route::get('/cartelera/{id}/calificar', [CarteleraController::class, 'crearCritica'])->name('cartelera.calificar');
+  Route::post('/cartelera/{id}/calificar', [CarteleraController::class, 'guardarCritica'])->name('cartelera.guardar_critica');
 
 
-    // --- ADMINISTRACIÓN (CRUDs) ---
-    // Gestión de Perfil de Usuario (Laravel Breeze)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+  // --- ADMINISTRACIÓN (CRUDs) ---
+  // Gestión de Perfil de Usuario (Laravel Breeze)
+  Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+  Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+  Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // CRUD de Usuarios
-    Route::resource('usuarios', UsuarioController::class);
+  // CRUD de Usuarios
+  Route::patch('/usuarios/{id}/reactivar', [UsuarioController::class, 'reactivar'])->name('usuarios.reactivar');
+  Route::resource('usuarios', UsuarioController::class);
 
-    // CRUD de Personas (Talento/Staff)
-    Route::resource('personas', PersonaController::class);
+  // CRUD de Personas (Talento/Staff)
+  Route::patch('/personas/{id}/reactivar', [PersonaController::class, 'reactivar'])->name('personas.reactivar');
+  Route::resource('personas', PersonaController::class);
 
-    // Catálogos (Géneros, Países, Clasificaciones)
-    Route::resource('generos', GeneroController::class);
-    Route::resource('paises', PaisController::class);
-    Route::resource('clasificaciones', ClasificacionController::class);
+  // Catálogos (Géneros, Países, Clasificaciones)
+  Route::patch('/generos/{id}/reactivar', [GeneroController::class, 'reactivar'])->name('generos.reactivar');
+  Route::resource('generos', GeneroController::class);
+  Route::patch('/paises/{id}/reactivar', [PaisController::class, 'reactivar'])->name('paises.reactivar');
+  Route::resource('paises', PaisController::class);
+  Route::patch('/clasificaciones/{id}/reactivar', [ClasificacionController::class, 'reactivar'])->name('clasificaciones.reactivar');
+  Route::resource('clasificaciones', ClasificacionController::class);
 
-    // Gestión de Críticas / Reseñas
-    Route::resource('criticas', CriticaController::class)->except(['create', 'edit', 'show']);
+  // Gestión de Críticas / Reseñas
+  Route::resource('criticas', CriticaController::class)->except(['create', 'edit', 'show']);
 
-    // EL JEFE FINAL: CRUD de Películas
-    Route::resource('peliculas', PeliculaController::class);
-
-    // Rutas personalizadas para manejar la tabla pivote (Elenco)
-    Route::post('/peliculas/{pelicula}/elenco', [PeliculaController::class, 'agregarElenco'])->name('peliculas.elenco.store');
-    Route::delete('/peliculas/{pelicula}/elenco/{pivot_id}', [PeliculaController::class, 'removerElenco'])->name('peliculas.elenco.destroy');
+  // EL JEFE FINAL: CRUD de Películas
+  Route::patch('/peliculas/{id}/reactivar', [PeliculaController::class, 'reactivar'])->name('peliculas.reactivar');
+  Route::resource('peliculas', PeliculaController::class);
+  Route::get('/peliculas/{pelicula}/detalles', [PeliculaController::class, 'detalles'])->name('peliculas.detalles');
+  // Rutas personalizadas para manejar la tabla pivote (Elenco)
+  Route::post('/peliculas/{pelicula}/elenco', [PeliculaController::class, 'agregarElenco'])->name('peliculas.elenco.store');
+  Route::delete('/peliculas/{pelicula}/elenco/{pivot}', [PeliculaController::class, 'removerElenco'])->name('peliculas.elenco.destroy');
 
 });
 

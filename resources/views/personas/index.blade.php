@@ -1,203 +1,109 @@
 <x-app-layout>
-    <div class="py-12 bg-black min-h-screen text-gray-300">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+  <x-slot name="header">
+    <h2 class="font-black text-2xl text-white tracking-tight uppercase">Base de <span class="text-red-600">Talento y Staff</span></h2>
+  </x-slot>
 
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter">
-                        Talento y <span class="text-red-600">Staff</span>
-                    </h2>
-                    <p class="text-sm text-gray-500 uppercase tracking-widest font-bold">
-                        Gestión de actores y directores de PrimeCinemas
-                    </p>
-                </div>
+  <div class="py-12 max-w-6xl mx-auto sm:px-6 lg:px-8 text-white relative">
+    <div id="mensajeAlert" class="hidden mb-6 p-4 rounded-xl font-bold uppercase tracking-widest text-sm text-center transition-all"></div>
 
-                <a href="{{ route('personas.create') }}"
-                    class="bg-red-600 hover:bg-red-700 text-white font-black py-3 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-red-900/40 uppercase text-sm">
-                    + Registrar Talento
-                </a>
-            </div>
+    @include('personas.create')
 
-            <div class="bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr
-                            class="bg-gray-800/50 text-red-500 uppercase text-xs font-black tracking-widest border-b border-gray-800">
-                            <th class="p-5">ID</th>
-                            <th class="p-5">Foto</th>
-                            <th class="p-5">Nombre Completo</th>
-                            <th class="p-5">Nacionalidad</th>
-                            <th class="p-5">Estado</th>
-                            <th class="p-5 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-800">
-                        @forelse ($personas as $persona)
-                            <tr class="hover:bg-red-900/5 transition-colors group">
-                                <td class="p-5 font-mono text-gray-500 text-sm italic">
-                                    #{{ $persona->id_persona }}
-                                </td>
-
-                                <td class="p-5">
-                                    <img src="{{ $persona->foto_url }}" alt="{{ $persona->nombre_completo }}"
-                                        class="w-12 h-12 object-cover rounded-full border-2 border-gray-700 group-hover:border-red-500 transition-colors">
-                                </td>
-
-                                <td class="p-5 text-white font-bold text-lg tracking-tight">
-                                    {{ $persona->nombre_completo }}
-                                </td>
-
-                                <td class="p-5 text-gray-400">
-                                    {{ $persona->nacionalidad ?? 'No especificada' }}
-                                </td>
-
-                                <td class="p-5">
-                                    @if($persona->activo)
-                                        <span
-                                            class="px-3 py-1 bg-green-900/30 text-green-500 text-[10px] font-black uppercase rounded-full border border-green-800">
-                                            Activo
-                                        </span>
-                                    @else
-                                        <span
-                                            class="px-3 py-1 bg-gray-800 text-gray-500 text-[10px] font-black uppercase rounded-full border border-gray-700">
-                                            Inactivo
-                                        </span>
-                                    @endif
-                                </td>
-
-                                <td class="p-5 flex justify-center gap-3">
-                                    <a href="{{ route('personas.edit', $persona->id_persona) }}"
-                                        class="text-blue-400 hover:text-white border border-blue-500/20 hover:bg-blue-600 p-2 px-4 rounded-xl transition-all text-xs font-black uppercase tracking-widest">
-                                        Editar
-                                    </a>
-
-                                    <form action="{{ route('personas.destroy', $persona->id_persona) }}" method="POST"
-                                        onsubmit="return confirm('¿Estás seguro de cambiar el estado de esta persona?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="text-red-500 hover:text-white border border-red-500/20 hover:bg-red-600 p-2 px-4 rounded-xl transition-all text-xs font-black uppercase tracking-widest">
-                                            @if($persona->activo) Desactivar @else Activar @endif
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="p-20 text-center text-gray-600 uppercase font-black opacity-20">
-                                    Sin Talento Registrado
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="mt-6 text-right">
-                <p class="text-xs text-gray-600 font-mono uppercase">
-                    Total de registros: {{ $personas->count() }}
-                </p>
-            </div>
-
-        </div>
+    <div class="bg-gray-900 p-8 rounded-3xl border border-gray-800 shadow-2xl overflow-x-auto">
+      <table class="w-full text-left text-sm whitespace-nowrap">
+        <thead>
+          <tr class="text-gray-500 uppercase tracking-widest text-[10px] border-b border-gray-800">
+            <th class="pb-3 px-4 w-16">Foto</th>
+            <th class="pb-3 px-4">Estado</th>
+            <th class="pb-3 px-4">Nombre Completo</th>
+            <th class="pb-3 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaDatos"></tbody>
+      </table>
     </div>
-</x-app-layout><x-app-layout>
-    <div class="py-12 bg-black min-h-screen text-gray-300">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <h2 class="text-3xl font-black text-white uppercase tracking-tighter">
-                        Talento y <span class="text-red-600">Staff</span>
-                    </h2>
-                    <p class="text-sm text-gray-500 uppercase tracking-widest font-bold">
-                        Gestión de actores y directores de PrimeCinemas
-                    </p>
-                </div>
+    @include('personas.edit')
+  </div>
 
-                <a href="{{ route('personas.create') }}"
-                    class="bg-red-600 hover:bg-red-700 text-white font-black py-3 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-red-900/40 uppercase text-sm">
-                    + Registrar Talento
-                </a>
-            </div>
+  <script>
+    const csrfToken = '{{ csrf_token() }}';
 
-            <div class="bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden shadow-2xl">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr
-                            class="bg-gray-800/50 text-red-500 uppercase text-xs font-black tracking-widest border-b border-gray-800">
-                            <th class="p-5">ID</th>
-                            <th class="p-5">Foto</th>
-                            <th class="p-5">Nombre Completo</th>
-                            <th class="p-5">Nacionalidad</th>
-                            <th class="p-5">Estado</th>
-                            <th class="p-5 text-center">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-800">
-                        @forelse ($personas as $persona)
-                            <tr class="hover:bg-red-900/5 transition-colors group">
-                                <td class="p-5 font-mono text-gray-500 text-sm italic">
-                                    #{{ $persona->id_persona }}
-                                </td>
+    function mostrarMensaje(msg, esExito) {
+      const alertBox = document.getElementById('mensajeAlert');
+      alertBox.textContent = msg;
+      alertBox.className = `mb-6 p-4 rounded-xl font-bold uppercase tracking-widest text-sm text-center border ${esExito ? 'bg-green-500/20 text-green-500 border-green-500/30' : 'bg-red-500/20 text-red-500 border-red-500/30'}`;
+      alertBox.classList.remove('hidden');
+      setTimeout(() => alertBox.classList.add('hidden'), 3000);
+    }
 
-                                <td class="p-5">
-                                    <img src="{{ $persona->foto_url }}" alt="{{ $persona->nombre_completo }}"
-                                        class="w-12 h-12 object-cover rounded-full border-2 border-gray-700 group-hover:border-red-500 transition-colors">
-                                </td>
+    async function cargarTabla() {
+      const res = await fetch('{{ route('personas.index') }}', { headers: { 'Accept': 'application/json' } });
+      const json = await res.json();
+      const tbody = document.getElementById('tablaDatos');
+      tbody.innerHTML = '';
 
-                                <td class="p-5 text-white font-bold text-lg tracking-tight">
-                                    {{ $persona->nombre_completo }}
-                                </td>
+      json.data.forEach(item => {
+        const estadoHTML = item.activo ? `<span class="text-green-500 text-xs font-black">ACTIVO</span>` : `<span class="text-red-500 text-xs font-black">INACTIVO</span>`;
+        const fotoHTML = `<img src="${item.foto_url}" onerror="this.src='https://ui-avatars.com/api/?name=${item.nombre_completo}&background=random'" class="w-10 h-10 rounded-full object-cover border border-gray-700">`;
+        const btnEditar = `<button onclick="abrirModal(${item.id_persona}, '${item.nombre_completo}', '${item.foto_url}')" class="text-blue-500 hover:text-blue-400 font-bold text-xs uppercase tracking-widest mr-3">Editar</button>`;
+        const btnEstado = item.activo 
+          ? `<button onclick="cambiarEstado(${item.id_persona}, 'destroy', 'DELETE')" class="text-red-500 font-bold text-xs uppercase tracking-widest">Desactivar</button>`
+          : `<button onclick="cambiarEstado(${item.id_persona}, 'reactivar', 'PATCH')" class="text-green-500 font-bold text-xs uppercase tracking-widest">Reactivar</button>`;
 
-                                <td class="p-5">
-                                    @if($persona->activo)
-                                        <span
-                                            class="px-3 py-1 bg-green-900/30 text-green-500 text-[10px] font-black uppercase rounded-full border border-green-800">
-                                            Activo
-                                        </span>
-                                    @else
-                                        <span
-                                            class="px-3 py-1 bg-gray-800 text-gray-500 text-[10px] font-black uppercase rounded-full border border-gray-700">
-                                            Inactivo
-                                        </span>
-                                    @endif
-                                </td>
+        tbody.innerHTML += `
+            <tr class="border-b border-gray-800/50 hover:bg-gray-800/30 ${!item.activo ? 'opacity-50' : ''}">
+                <td class="py-3 px-4">${fotoHTML}</td>
+                <td class="py-4 px-4">${estadoHTML}</td>
+                <td class="py-4 px-4 font-bold text-white">${item.nombre_completo}</td>
+                <td class="py-4 px-4 text-right">${btnEditar} ${btnEstado}</td>
+            </tr>`;
+      });
+    }
 
-                                <td class="p-5 flex justify-center gap-3">
-                                    <a href="{{ route('personas.edit', $persona->id_persona) }}"
-                                        class="text-blue-400 hover:text-white border border-blue-500/20 hover:bg-blue-600 p-2 px-4 rounded-xl transition-all text-xs font-black uppercase tracking-widest">
-                                        Editar
-                                    </a>
+    async function guardarData(e) {
+      e.preventDefault();
+      const data = { nombre_completo: document.getElementById('nombre_completo').value, foto_url: document.getElementById('foto_url').value };
+      const res = await fetch('{{ route('personas.store') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      mostrarMensaje(json.message, res.ok);
+      if (res.ok) { document.getElementById('formCrear').reset(); cargarTabla(); }
+    }
 
-                                    <form action="{{ route('personas.destroy', $persona->id_persona) }}" method="POST"
-                                        onsubmit="return confirm('¿Estás seguro de cambiar el estado de esta persona?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="text-red-500 hover:text-white border border-red-500/20 hover:bg-red-600 p-2 px-4 rounded-xl transition-all text-xs font-black uppercase tracking-widest">
-                                            @if($persona->activo) Desactivar @else Activar @endif
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="p-20 text-center text-gray-600 uppercase font-black opacity-20">
-                                    Sin Talento Registrado
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+    function abrirModal(id, nombre, url) {
+      document.getElementById('edit_id').value = id;
+      document.getElementById('edit_nombre_completo').value = nombre;
+      document.getElementById('edit_foto_url').value = url;
+      document.getElementById('modalEditar').classList.remove('hidden');
+    }
+    function cerrarModal() { document.getElementById('modalEditar').classList.add('hidden'); }
 
-            <div class="mt-6 text-right">
-                <p class="text-xs text-gray-600 font-mono uppercase">
-                    Total de registros: {{ $personas->count() }}
-                </p>
-            </div>
+    async function actualizarData(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit_id').value;
+      const data = { nombre_completo: document.getElementById('edit_nombre_completo').value, foto_url: document.getElementById('edit_foto_url').value };
+      const url = '{{ route("personas.update", ":id") }}'.replace(':id', id);
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      mostrarMensaje(json.message, res.ok);
+      if (res.ok) { cerrarModal(); cargarTabla(); }
+    }
 
-        </div>
-    </div>
+    async function cambiarEstado(id, accion, metodo) {
+      const url = accion === 'destroy' ? `/personas/${id}` : `/personas/${id}/reactivar`;
+      const res = await fetch(url, { method: metodo, headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }});
+      const json = await res.json();
+      mostrarMensaje(json.message, res.ok);
+      if (res.ok) cargarTabla();
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarTabla);
+  </script>
 </x-app-layout>
