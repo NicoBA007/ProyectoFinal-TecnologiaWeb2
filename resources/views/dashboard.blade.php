@@ -32,23 +32,7 @@
               <a href="{{ route('usuarios.index') }}"
                 class="bg-gray-700 hover:bg-gray-600 text-white text-[10px] font-black py-2 rounded-lg transition-all">VER
                 LISTADO</a>
-              <a href="{{ route('usuarios.create') }}"
-                class="bg-red-600 hover:bg-red-700 text-white text-[10px] font-black py-2 rounded-lg transition-all shadow-lg shadow-red-900/20">NUEVO
-                REGISTRO</a>
-            </div>
-          </div>
-
-          <div
-            class="bg-gray-800/50 border border-gray-700 p-6 rounded-2xl hover:border-red-500/50 transition-all group">
-            <div class="text-3xl mb-4">🎭</div>
-            <h4 class="text-white font-bold mb-4 uppercase text-sm tracking-widest">Talento & Staff</h4>
-            <div class="flex flex-col gap-2">
-              <a href="{{ route('personas.index') }}"
-                class="bg-gray-700 hover:bg-gray-600 text-white text-[10px] font-black py-2 rounded-lg transition-all">VER
-                ELENCO</a>
-              <a href="{{ route('personas.create') }}"
-                class="bg-red-600 hover:bg-red-700 text-white text-[10px] font-black py-2 rounded-lg transition-all shadow-lg shadow-red-900/20">AÑADIR
-                TALENTO</a>
+              
             </div>
           </div>
 
