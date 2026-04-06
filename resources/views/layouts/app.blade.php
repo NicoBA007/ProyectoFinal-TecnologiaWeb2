@@ -12,7 +12,7 @@
 </head>
 <body class="font-sans antialiased bg-gray-950 text-white selection:bg-red-600 selection:text-white">
     <div class="min-h-screen bg-gray-950">
-        
+
         @include('layouts.navigation')
 
         @isset($header)
@@ -26,8 +26,9 @@
         <main>
             {{ $slot }}
         </main>
+        @include('layouts.footer')
     </div>
-    
+
     @livewireScripts
 </body>
 </html>

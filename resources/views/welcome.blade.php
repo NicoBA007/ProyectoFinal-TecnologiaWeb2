@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PrimeCinemas - Cochabamba</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     @livewireStyles
 </head>
 <body class="bg-gray-950 text-white font-sans antialiased selection:bg-red-600 selection:text-white">
@@ -14,7 +14,7 @@
     <nav class="fixed w-full z-50 bg-gray-950/80 backdrop-blur-md border-b border-gray-800">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="/" class="text-2xl font-black tracking-tighter flex items-center gap-2">
-                <span class="text-3xl">🎬</span> 
+                <span class="text-3xl">🎬</span>
                 <span class="text-white">Prime</span><span class="text-red-600">Cinemas</span>
             </a>
 
@@ -30,7 +30,7 @@
                         <a href="{{ url('/dashboard') }}" class="text-gray-300 hover:text-white font-medium transition-colors">Mi Panel</a>
                     @else
                         <a href="{{ route('login') }}" class="text-gray-300 hover:text-white font-medium transition-colors">Ingresar</a>
-                        
+
                         @if (Route::has('register'))
                             <a href="{{ route('register') }}" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-bold transition-all shadow-[0_0_15px_rgba(220,38,38,0.5)] hover:shadow-[0_0_25px_rgba(220,38,38,0.7)] transform hover:-translate-y-0.5">
                                 Registrarse
@@ -60,7 +60,7 @@
                 <div class="flex justify-between items-end mb-8">
                     <h2 class="text-3xl font-bold border-l-4 border-red-600 pl-4">En Cartelera</h2>
                 </div>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     <div class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-red-600 transition-colors group cursor-pointer">
                         <div class="h-80 bg-gray-800 relative">
@@ -88,7 +88,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-red-600 transition-colors group cursor-pointer">
                         <div class="h-80 bg-gray-800 relative">
                             <div class="absolute inset-0 flex items-center justify-center text-gray-600">Póster Película 3</div>
