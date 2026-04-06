@@ -28,7 +28,7 @@
                 <div class="hidden lg:flex items-center space-x-10">
                     <a href="/"
                         class="text-[12px] font-black uppercase tracking-[0.25em] italic transition-all duration-300 drop-shadow-md {{ request()->is('/') ? 'text-red-600' : 'text-white hover:text-red-500' }}">
-                        Cartelera
+                        Inicio
                     </a>
                     <a href="#"
                         class="text-white hover:text-red-500 transition-all duration-300 font-black uppercase text-[12px] tracking-[0.25em] italic drop-shadow-md">

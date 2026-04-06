@@ -1,93 +1,181 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}" class="space-y-6">
-        @csrf
+    <div class="flex flex-col lg:flex-row min-h-screen bg-black relative">
 
-        <div class="text-center mb-8">
-            <h2 class="text-3xl font-black text-white tracking-tight uppercase">Crea tu <span
-                    class="text-red-600">Cuenta</span>
-            </h2>
-            <p class="text-gray-400 text-sm mt-2 uppercase tracking-widest text-[10px] font-bold">Únete a PrimeCinemas y
-                califica tus estrenos favoritos</p>
-        </div>
-
-        <div class="space-y-4">
-            <div>
-                <label for="nombres"
-                    class="block text-sm font-bold text-gray-300 uppercase tracking-widest mb-1">Nombres</label>
-                <x-text-input id="nombres"
-                    class="block mt-1 w-full bg-gray-800 border-gray-700 text-white focus:ring-red-600 focus:border-red-600 rounded-xl"
-                    type="text" name="nombres" :value="old('nombres')" required autofocus autocomplete="given-name"
-                    placeholder="Ej. Daniel" />
-                <x-input-error :messages="$errors->get('nombres')" class="mt-2 text-red-500 font-medium" />
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label for="apellido_paterno"
-                        class="block text-sm font-bold text-gray-300 uppercase tracking-widest mb-1">Apellido
-                        Paterno</label>
-                    <x-text-input id="apellido_paterno"
-                        class="block mt-1 w-full bg-gray-800 border-gray-700 text-white focus:ring-red-600 focus:border-red-600 rounded-xl"
-                        type="text" name="apellido_paterno" :value="old('apellido_paterno')" required
-                        autocomplete="family-name" placeholder="Maldonado" />
-                    <x-input-error :messages="$errors->get('apellido_paterno')" class="mt-2 text-red-500 font-medium" />
-                </div>
-
-                <div>
-                    <label for="apellido_materno"
-                        class="block text-sm font-bold text-gray-300 uppercase tracking-widest mb-1">Apellido
-                        Materno</label>
-                    <x-text-input id="apellido_materno"
-                        class="block mt-1 w-full bg-gray-800 border-gray-700 text-white focus:ring-red-600 focus:border-red-600 rounded-xl"
-                        type="text" name="apellido_materno" :value="old('apellido_materno')" autocomplete="family-name"
-                        placeholder="Cespedes" />
-                    <x-input-error :messages="$errors->get('apellido_materno')" class="mt-2 text-red-500 font-medium" />
+        {{-- COLUMNA IZQUIERDA (COLLAGE) --}}
+        <div class="absolute inset-0 lg:relative lg:flex lg:w-1/2 z-0">
+            <div class="absolute inset-0 z-0">
+                <img src="{{ asset('images/login-collage.png') }}" alt="Movie Collage"
+                    class="w-full h-full object-cover opacity-40 lg:opacity-60">
+                <div
+                    class="absolute inset-0 bg-black/70 lg:bg-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-black">
                 </div>
             </div>
         </div>
 
-        <div class="mt-4">
-            <label for="email" class="block text-sm font-bold text-gray-300 uppercase tracking-widest mb-1">Correo
-                Electrónico</label>
-            <x-text-input id="email"
-                class="block mt-1 w-full bg-gray-800 border-gray-700 text-white focus:ring-red-600 focus:border-red-600 rounded-xl"
-                type="email" name="email" :value="old('email')" required autocomplete="username"
-                placeholder="tu@correo.com" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 font-medium" />
-        </div>
+        {{-- COLUMNA DERECHA: FORMULARIO --}}
+        <div class="w-full lg:w-1/2 flex flex-col bg-transparent lg:bg-black relative z-20 min-h-screen">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div>
-                <label for="password"
-                    class="block text-sm font-bold text-gray-300 uppercase tracking-widest mb-1">Contraseña</label>
-                <x-text-input id="password"
-                    class="block mt-1 w-full bg-gray-800 border-gray-700 text-white focus:ring-red-600 focus:border-red-600 rounded-xl"
-                    type="password" name="password" required autocomplete="new-password" placeholder="••••••••" />
-                <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 font-medium" />
+            {{-- Contenedor interno para centrado vertical y espaciado del Nav --}}
+            <div class="flex-grow flex flex-col justify-center px-8 md:px-16 lg:px-24 pt-28 pb-12">
+
+                <form method="POST" action="{{ route('register') }}" class="max-w-xl w-full mx-auto space-y-5">
+                    @csrf
+
+                    {{-- Cabecera del Formulario --}}
+                    <div class="mb-8 text-center lg:text-left">
+                        <p class="text-gray-400 text-xs uppercase tracking-[0.3em] font-black mb-2 opacity-70">
+                            Únete a la experiencia
+                        </p>
+                        <h2 class="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase leading-none">
+                            CREA TU <span class="text-red-600">CUENTA</span>
+                        </h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        {{-- Campo: Nombres --}}
+                        <div class="space-y-2">
+                            <label for="nombres"
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Nombres:</label>
+                            <input id="nombres" type="text" name="nombres" :value="old('nombres')" required
+                                autofocus
+                                class="block w-full bg-gray-900/40 border border-gray-700 text-white focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all py-3.5 px-4 rounded-xl placeholder-gray-600"
+                                placeholder="Ej. Daniel">
+                            <x-input-error :messages="$errors->get('nombres')" class="mt-1 text-xs text-red-500" />
+                        </div>
+
+                        {{-- Grid: Apellidos --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label for="apellido_paterno"
+                                    class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Apellido
+                                    Paterno:</label>
+                                <input id="apellido_paterno" type="text" name="apellido_paterno"
+                                    :value="old('apellido_paterno')" required
+                                    class="block w-full bg-gray-900/40 border border-gray-700 text-white focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all py-3.5 px-4 rounded-xl placeholder-gray-600"
+                                    placeholder="Maldonado">
+                                <x-input-error :messages="$errors->get('apellido_paterno')" class="mt-1 text-xs text-red-500" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <label for="apellido_materno"
+                                    class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Apellido
+                                    Materno:</label>
+                                <input id="apellido_materno" type="text" name="apellido_materno"
+                                    :value="old('apellido_materno')"
+                                    class="block w-full bg-gray-900/40 border border-gray-700 text-white focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all py-3.5 px-4 rounded-xl placeholder-gray-600"
+                                    placeholder="Cespedes">
+                                <x-input-error :messages="$errors->get('apellido_materno')" class="mt-1 text-xs text-red-500" />
+                            </div>
+                        </div>
+
+                        {{-- Campo: Email --}}
+                        <div class="space-y-2">
+                            <label for="email"
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Correo
+                                Electrónico:</label>
+                            <input id="email" type="email" name="email" :value="old('email')" required
+                                class="block w-full bg-gray-900/40 border border-gray-700 text-white focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all py-3.5 px-4 rounded-xl placeholder-gray-600"
+                                placeholder="tu@correo.com">
+                            <x-input-error :messages="$errors->get('email')" class="mt-1 text-xs text-red-500" />
+                        </div>
+
+                        {{-- Grid: Contraseñas con Ojos --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{-- Password --}}
+                            <div class="space-y-2">
+                                <label for="password"
+                                    class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Contraseña:</label>
+                                <div class="relative">
+                                    <input id="password" type="password" name="password" required
+                                        class="block w-full bg-gray-900/40 border border-gray-700 text-white focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all py-3.5 px-4 pr-12 rounded-xl placeholder-gray-600"
+                                        placeholder="••••••••">
+
+                                    <button type="button" onclick="togglePassword('password', 'eye-icon-1')"
+                                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-red-500 transition-all">
+                                        <svg id="eye-icon-1" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                            class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.036 12.322a1.012 1.012 0 010-.644.75.75 0 01.127-.145c.427-.478 2.05-2.223 4.54-3.535C8.357 6.963 10.457 6.25 12 6.25s3.643.713 5.3 1.742c2.49 1.312 4.113 3.057 4.54 3.535a.75.75 0 01.127.145c.348.423.348.86 0 1.284-.427.478-2.05 2.223-4.54 3.535C15.643 17.037 13.543 17.75 12 17.75s-3.643-.713-5.3-1.742c-2.49-1.312-4.113-3.057-4.54-3.535a.75.75 0 01-.127-.145z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <x-input-error :messages="$errors->get('password')" class="mt-1 text-xs text-red-500" />
+                            </div>
+
+                            {{-- Confirmar Password --}}
+                            <div class="space-y-2">
+                                <label for="password_confirmation"
+                                    class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Confirmar:</label>
+                                <div class="relative">
+                                    <input id="password_confirmation" type="password" name="password_confirmation"
+                                        required
+                                        class="block w-full bg-gray-900/40 border border-gray-700 text-white focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all py-3.5 px-4 pr-12 rounded-xl placeholder-gray-600"
+                                        placeholder="••••••••">
+
+                                    <button type="button"
+                                        onclick="togglePassword('password_confirmation', 'eye-icon-2')"
+                                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-red-500 transition-all">
+                                        <svg id="eye-icon-2" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                            class="w-5 h-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M2.036 12.322a1.012 1.012 0 010-.644.75.75 0 01.127-.145c.427-.478 2.05-2.223 4.54-3.535C8.357 6.963 10.457 6.25 12 6.25s3.643.713 5.3 1.742c2.49 1.312 4.113 3.057 4.54 3.535a.75.75 0 01.127.145c.348.423.348.86 0 1.284-.427.478-2.05 2.223-4.54 3.535C15.643 17.037 13.543 17.75 12 17.75s-3.643-.713-5.3-1.742c-2.49-1.312-4.113-3.057-4.54-3.535a.75.75 0 01-.127-.145z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Botón de Acción --}}
+                    <div class="pt-6">
+                        <button type="submit"
+                            class="w-full bg-red-700 hover:bg-red-600 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-red-900/20 transform hover:-translate-y-1 uppercase tracking-widest text-[11px]">
+                            REGISTRARSE AHORA
+                        </button>
+                    </div>
+
+                    {{-- Link a Login --}}
+                    <div class="pt-6 text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-600">
+                            ¿Ya tienes una cuenta?
+                            <a href="{{ route('login') }}"
+                                class="text-red-500 hover:text-white transition-colors ml-2 underline underline-offset-4 decoration-red-900">
+                                Inicia sesión aquí
+                            </a>
+                        </p>
+                    </div>
+                </form>
             </div>
-
-            <div>
-                <label for="password_confirmation"
-                    class="block text-sm font-bold text-gray-300 uppercase tracking-widest mb-1">Confirmar</label>
-                <x-text-input id="password_confirmation"
-                    class="block mt-1 w-full bg-gray-800 border-gray-700 text-white focus:ring-red-600 focus:border-red-600 rounded-xl"
-                    type="password" name="password_confirmation" required autocomplete="new-password"
-                    placeholder="••••••••" />
-                <x-input-error :messages="$errors->get('password_confirmation')"
-                    class="mt-2 text-red-500 font-medium" />
-            </div>
         </div>
+    </div>
 
-        <div class="flex flex-col space-y-4 mt-8">
-            <button type="submit"
-                class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] transform hover:-translate-y-1 uppercase tracking-widest text-xs">
-                REGISTRARSE AHORA
-            </button>
+    {{-- Lógica JS para los ojos --}}
+    <script>
+        function togglePassword(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
 
-            <a class="text-center text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-white transition-colors underline decoration-red-600 underline-offset-8"
-                href="{{ route('login') }}">
-                ¿Ya tienes cuenta? Inicia sesión
-            </a>
-        </div>
-    </form>
+            // Icono Ojo Abierto
+            const eyeOpen =
+                '<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644.75.75 0 01.127-.145c.427-.478 2.05-2.223 4.54-3.535C8.357 6.963 10.457 6.25 12 6.25s3.643.713 5.3 1.742c2.49 1.312 4.113 3.057 4.54 3.535a.75.75 0 01.127.145c.348.423.348.86 0 1.284-.427.478-2.05 2.223-4.54 3.535C15.643 17.037 13.543 17.75 12 17.75s-3.643-.713-5.3-1.742c-2.49-1.312-4.113-3.057-4.54-3.535a.75.75 0 01-.127-.145z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />';
+
+            // Icono Ojo Cerrado
+            const eyeClosed =
+                '<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.822 7.822L21 21m-2.278-2.278L15.07 15.07M15.07 15.07a3.5 3.5 0 01-4.949-4.949l4.949 4.949z" />';
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = eyeClosed;
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = eyeOpen;
+            }
+        }
+    </script>
 </x-guest-layout>
