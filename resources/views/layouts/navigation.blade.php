@@ -227,7 +227,7 @@
                     </x-dropdown>
                 @else
                     <a href="{{ route('login') }}"
-                        class="text-[10px] font-black uppercase text-white hover:text-red-500 transition-colors">Entrar</a>
+                        class="text-[10px] font-black uppercase text-white hover:text-red-500 transition-colors">Ingresar</a>
                     <a href="{{ route('register') }}"
                         class="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase transition-all shadow-lg shadow-red-600/20">Registro</a>
                 @endauth
@@ -404,7 +404,7 @@
                 @else
                     <div class="grid grid-cols-2 gap-3 pt-2">
                         <a href="{{ route('login') }}"
-                            class="flex justify-center py-3 text-white font-black text-[10px] uppercase border-2 border-gray-800 rounded-xl">Entrar</a>
+                            class="flex justify-center py-3 text-white font-black text-[10px] uppercase border-2 border-gray-800 rounded-xl">Ingresar</a>
                         <a href="{{ route('register') }}"
                             class="flex justify-center py-3 bg-red-600 text-white font-black text-[10px] uppercase rounded-xl">Registro</a>
                     </div>

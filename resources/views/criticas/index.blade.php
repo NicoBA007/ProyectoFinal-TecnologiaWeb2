@@ -1,8 +1,9 @@
-<x-app-layout>
+<x-admin-layout>
     <div class="py-10 max-w-7xl mx-auto sm:px-6 lg:px-8 text-white relative">
-        
+
         {{-- Monitor de Alertas --}}
-        <div id="mensajeAlert" class="hidden mb-6 p-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] text-center transition-all border shadow-2xl relative overflow-hidden">
+        <div id="mensajeAlert"
+            class="hidden mb-6 p-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] text-center transition-all border shadow-2xl relative overflow-hidden">
             <div class="absolute inset-0 opacity-10 bg-current"></div>
             <span id="textoMensaje" class="relative z-10"></span>
         </div>
@@ -11,8 +12,10 @@
         <div class="mb-8 flex items-center gap-4">
             <div class="h-12 w-1 bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
             <div>
-                <h2 class="text-2xl font-black uppercase tracking-tighter italic">Panel de <span class="text-red-600 text-3xl">Moderación</span></h2>
-                <p class="text-[9px] text-gray-500 uppercase tracking-[0.4em] font-bold">User Feedback & Ratings System</p>
+                <h2 class="text-2xl font-black uppercase tracking-tighter italic">Panel de <span
+                        class="text-red-600 text-3xl">Moderación</span></h2>
+                <p class="text-[9px] text-gray-500 uppercase tracking-[0.4em] font-bold">User Feedback & Ratings System
+                </p>
             </div>
         </div>
 
@@ -21,9 +24,11 @@
             <div class="p-6 border-b border-white/5 bg-white/[0.02] flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <span class="text-xl">📊</span>
-                    <h3 class="text-gray-400 font-black uppercase tracking-[0.3em] text-[10px]">Registro Histórico de Críticas</h3>
+                    <h3 class="text-gray-400 font-black uppercase tracking-[0.3em] text-[10px]">Registro Histórico de
+                        Críticas</h3>
                 </div>
-                <div class="flex items-center gap-4 text-[9px] font-mono text-gray-700 uppercase tracking-widest italic">
+                <div
+                    class="flex items-center gap-4 text-[9px] font-mono text-gray-700 uppercase tracking-widest italic">
                     <span>Verified Reviews</span>
                 </div>
             </div>
@@ -54,7 +59,8 @@
         function mostrarMensaje(msg, esExito) {
             const alertBox = document.getElementById('mensajeAlert');
             alertBox.textContent = msg;
-            alertBox.className = `mb-6 p-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] text-center border ${esExito ? 'bg-green-600/10 text-green-500 border-green-600/20' : 'bg-red-600/10 text-red-600 border-red-600/20'}`;
+            alertBox.className =
+                `mb-6 p-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] text-center border ${esExito ? 'bg-green-600/10 text-green-500 border-green-600/20' : 'bg-red-600/10 text-red-600 border-red-600/20'}`;
             alertBox.classList.remove('hidden');
             setTimeout(() => alertBox.classList.add('hidden'), 4000);
         }
@@ -62,22 +68,27 @@
         // Función para dibujar las estrellas (Mantiene tu lógica de colores)
         function renderEstrellas(puntos) {
             let estrellas = '';
-            for(let i = 1; i <= 5; i++) {
-                estrellas += i <= puntos 
-                    ? '<span class="text-yellow-500">★</span>' 
-                    : '<span class="text-gray-800">★</span>';
+            for (let i = 1; i <= 5; i++) {
+                estrellas += i <= puntos ?
+                    '<span class="text-yellow-500">★</span>' :
+                    '<span class="text-gray-800">★</span>';
             }
             return estrellas;
         }
 
         async function cargarTabla() {
-            const res = await fetch('{{ route('criticas.index') }}', { headers: { 'Accept': 'application/json' } });
+            const res = await fetch('{{ route('criticas.index') }}', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
             const json = await res.json();
             const tbody = document.getElementById('tablaDatos');
             tbody.innerHTML = '';
 
             json.data.forEach(item => {
-                const btnEliminar = `<button onclick="eliminarCritica(${item.id_critica})" class="text-red-900 hover:text-red-500 font-black text-[9px] uppercase tracking-widest transition-colors">Borrar</button>`;
+                const btnEliminar =
+                    `<button onclick="eliminarCritica(${item.id_critica})" class="text-red-900 hover:text-red-500 font-black text-[9px] uppercase tracking-widest transition-colors">Borrar</button>`;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-white/[0.02] transition-all duration-300">
@@ -98,12 +109,15 @@
         }
 
         async function eliminarCritica(id) {
-            if(!confirm("¿Estás seguro de que deseas eliminar esta crítica PERMANENTEMENTE?")) return;
+            if (!confirm("¿Estás seguro de que deseas eliminar esta crítica PERMANENTEMENTE?")) return;
 
             const url = `/criticas/${id}`;
-            const res = await fetch(url, { 
-                method: 'DELETE', 
-                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
+            const res = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
             });
             const json = await res.json();
             mostrarMensaje(json.message, res.ok);
@@ -112,4 +126,4 @@
 
         document.addEventListener('DOMContentLoaded', cargarTabla);
     </script>
-</x-app-layout>
+</x-admin-layout>

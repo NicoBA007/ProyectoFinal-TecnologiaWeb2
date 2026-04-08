@@ -1,10 +1,17 @@
 <?php
+
 namespace App\Http\Requests;
+
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdatePeliculaAjaxRequest extends FormRequest {
-    public function authorize(): bool { return true; }
-    public function rules(): array {
+class UpdatePeliculaAjaxRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+    public function rules(): array
+    {
         $id = $this->route('pelicula') ?? $this->segment(2);
         return [
             'titulo' => 'required|string|max:150|unique:pelicula,titulo,' . $id . ',id_pelicula',

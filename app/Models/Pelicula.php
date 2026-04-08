@@ -61,7 +61,16 @@ class Pelicula extends Model
      */
     public function paises()
     {
-        return $this->belongsToMany(Pais::class, 'pelicula_pais_origen', 'id_pelicula', 'id_pais_origen');
+        // 1. Modelo: Pais
+        // 2. Tabla intermedia: pelicula_pais_origen
+        // 3. FK en intermedia que apunta a Pelicula: id_pelicula
+        // 4. FK en intermedia que apunta a Pais: id_pais_origen
+        return $this->belongsToMany(
+            Pais::class,
+            'pelicula_pais_origen',
+            'id_pelicula',
+            'id_pais_origen'
+        );
     }
 
     /**

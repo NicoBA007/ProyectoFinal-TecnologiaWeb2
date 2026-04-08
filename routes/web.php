@@ -50,9 +50,9 @@ Route::get('/buscar', [CarteleraController::class, 'search'])->name('cartelera.s
 // ==========================================
 // --- ADMINISTRACIÓN (PrimeCinemas Admin) ---
 // Estas rutas son las que usará tu nuevo SideBar
-Route::middleware(['auth', 'verified'])->prefix('admin')->group(function (){
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
 
-    // --- Dashboard (Panel de bienvenida para el Admin) ---
+    // --- Dashboard ---
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
@@ -82,13 +82,16 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->group(function (){
     // Gestión de Críticas / Reseñas
     Route::resource('criticas', CriticaController::class)->except(['create', 'edit', 'show']);
 
-    // EL JEFE FINAL: CRUD de Películas
-    Route::patch('/peliculas/{id}/reactivar', [PeliculaController::class, 'reactivar'])->name('peliculas.reactivar');
+    // --- EL JEFE FINAL: CRUD de Películas ---
+
+    // 1. RUTAS DE ELENCO (Deben ir ARRIBA del resource y SIN el prefijo /admin repetido)
     Route::get('/peliculas/{pelicula}/detalles', [PeliculaController::class, 'detalles'])->name('peliculas.detalles');
-    Route::resource('peliculas', PeliculaController::class);
-    // Rutas personalizadas para manejar la tabla pivote (Elenco)
     Route::post('/peliculas/{pelicula}/elenco', [PeliculaController::class, 'agregarElenco'])->name('peliculas.elenco.store');
     Route::delete('/peliculas/{pelicula}/elenco/{pivot}', [PeliculaController::class, 'removerElenco'])->name('peliculas.elenco.destroy');
+
+    // 2. RUTAS DE PELÍCULA
+    Route::patch('/peliculas/{id}/reactivar', [PeliculaController::class, 'reactivar'])->name('peliculas.reactivar');
+    Route::resource('peliculas', PeliculaController::class);
 });
 // --- CLIENTES / USUARIOS NORMALES ---
 // Estas rutas son las que buscará el layout de Breeze (navigation.blade.php)
@@ -96,7 +99,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // --- ACCIONES DEL CLIENTE ---
     // Rutas exclusivas para dejar una reseña (debes estar logueado para verlas)
     Route::get('/cartelera/{id}/calificar', [CarteleraController::class, 'crearCritica'])->name('cartelera.calificar');

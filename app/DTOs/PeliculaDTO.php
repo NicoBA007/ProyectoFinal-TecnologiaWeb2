@@ -41,6 +41,7 @@ class PeliculaDTO
                 'nombre'    => $g->nombre
             ]),
             'paises' => $pelicula->paises->map(fn($p) => [
+                'id_pais_origen' => $p->id_pais_origen,
                 'nombre' => $p->nombre,
             ]),
             'reparto'       => $pelicula->personas->map(fn($per) => PersonaDTO::fromModel($per)),

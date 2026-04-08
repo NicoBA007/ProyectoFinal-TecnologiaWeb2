@@ -93,11 +93,11 @@ class PeliculaController extends Controller
 
             // 2. Retornamos la vista de gestión pasando todas las variables
             return view('peliculas.index', compact(
-                'peliculas', 
-                'clasificaciones', 
-                'generos', 
+                'peliculas',
+                'clasificaciones',
+                'generos',
                 'paises'
-            )); 
+            ));
         }
 
         // SI NO ES ADMIN, MANDA A LA CARTELERA CLIENTE:
@@ -108,40 +108,87 @@ class PeliculaController extends Controller
     {
         try {
             $data = $request->validated();
-            $data['activo'] = true;
+            $data['activo'] = true; // Forzamos activo por defecto
+
             $pelicula = Pelicula::create($data);
 
-            $pelicula->generos()->sync($request->generos);
-            $pelicula->paises()->sync($request->paises);
+            // Sincronizamos las tablas pivote
+            if ($request->has('generos')) $pelicula->generos()->sync($request->generos);
+            if ($request->has('paises')) $pelicula->paises()->sync($request->paises);
 
-            return response()->json(['success' => true, 'message' => 'Creada con géneros y países.', 'data' => PeliculaDTO::fromModel($pelicula)], 201);
+            // Importante: Cargar relaciones para que el DTO no de error
+            $pelicula->load(['clasificacion', 'generos', 'paises']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Título catalogado correctamente.',
+                'data' => PeliculaDTO::fromModel($pelicula)
+            ], 201);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al guardar.'], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error en el servidor: ' . $e->getMessage()
+            ], 500);
         }
     }
 
     public function update(UpdatePeliculaAjaxRequest $request, string $id): JsonResponse
     {
         try {
+            // 1. Buscamos la película o fallamos
             $pelicula = Pelicula::findOrFail($id);
+
+            // 2. Actualizamos los datos propios de la tabla 'pelicula'
+            // validated() solo tomará los campos definidos en tu UpdatePeliculaAjaxRequest
             $pelicula->update($request->validated());
 
-            $pelicula->generos()->sync($request->generos);
-            $pelicula->paises()->sync($request->paises);
+            // 3. Sincronizamos las relaciones N:M (Tablas intermedias)
+            // Usamos el operador null coalescing ?? [] por seguridad si no vienen datos
+            $pelicula->generos()->sync($request->input('generos', []));
+            $pelicula->paises()->sync($request->input('paises', []));
 
-            return response()->json(['success' => true, 'message' => 'Actualizada con éxito.', 'data' => PeliculaDTO::fromModel($pelicula)]);
+            // 4. RECARGAMOS las relaciones en la instancia para que el DTO las vea
+            $pelicula->load(['generos', 'paises', 'clasificacion']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cinta y activos digitales actualizados con éxito.',
+                'data'    => \App\DTOs\PeliculaDTO::fromModel($pelicula)
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: La película con ID ' . $id . ' no existe en el inventario.'
+            ], 404);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al actualizar.'], 500);
+            // Log para debug interno, mensaje genérico para el usuario
+            \Illuminate\Support\Facades\Log::error("Error en Update Película: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'SYSTEM_ERROR: Fallo en la persistencia de datos relacionales.'
+            ], 500);
         }
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(string $id)
     {
         try {
-            Pelicula::findOrFail($id)->update(['activo' => false]);
-            return response()->json(['success' => true, 'message' => 'Desactivada.']);
+            $pelicula = Pelicula::findOrFail($id);
+
+            // BAJA LÓGICA: Cambiamos el estado
+            $pelicula->activo = false;
+            $pelicula->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pelicula desactivada correctamente del sistema.'
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error.'], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al intentar dar de baja.'
+            ], 500);
         }
     }
 
@@ -177,43 +224,82 @@ class PeliculaController extends Controller
     public function agregarElenco(Request $request, string $id): JsonResponse
     {
         try {
+            // 1. Validación estricta con los valores del ENUM de tu DB
             $request->validate([
                 'id_persona' => 'required|exists:persona,id_persona',
-                'rol_en_pelicula' => 'required|string|max:50',
+                'rol_en_pelicula' => 'required|in:actor,director', // Solo permite estos dos
                 'papel_personaje' => 'nullable|string|max:100'
+            ], [
+                'rol_en_pelicula.in' => 'El rol debe ser actor o director.',
+                'id_persona.exists' => 'La persona seleccionada no existe en el registro.'
             ]);
 
             $pelicula = Pelicula::findOrFail($id);
 
-            // Validamos que no se duplique el mismo rol para la misma persona (Tu UNIQUE de BD)
+            // 2. Verificación de duplicados (Respetando tu restricción UNIQUE de la DB)
+            // Es importante especificar la tabla en el where para evitar ambigüedad
             $existe = $pelicula->personas()
                 ->where('pelicula_personal.id_persona', $request->id_persona)
                 ->where('pelicula_personal.rol_en_pelicula', $request->rol_en_pelicula)
                 ->exists();
 
             if ($existe) {
-                return response()->json(['success' => false, 'message' => 'Esta persona ya tiene este rol registrado en la película.'], 400);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Este talento ya está registrado con ese mismo rol en esta película.'
+                ], 422); // 422 es más apropiado para errores de validación lógica
             }
 
+            // 3. Inserción en la tabla pivote
             $pelicula->personas()->attach($request->id_persona, [
                 'rol_en_pelicula' => $request->rol_en_pelicula,
                 'papel_personaje' => $request->papel_personaje
             ]);
 
-            return response()->json(['success' => true, 'message' => 'Talento añadido al elenco correctamente.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Talento vinculado al reparto exitosamente.'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Captura errores de validación de Laravel (ej: campos vacíos)
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos inválidos.',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al añadir talento.'], 500);
+            // Captura cualquier otro error (BD, conexión, etc.)
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de sistema: No se pudo procesar la asignación.'
+            ], 500);
         }
     }
 
     public function removerElenco(string $id_pelicula, string $pivot_id): JsonResponse
     {
         try {
-            // Eliminamos usando el ID único de la tabla pivote que creaste en tu DB
-            \Illuminate\Support\Facades\DB::table('pelicula_personal')->where('id', $pivot_id)->delete();
-            return response()->json(['success' => true, 'message' => 'Rol removido del elenco.']);
+            // Eliminamos directamente de la tabla usando el ID del pivot
+            $eliminado = \Illuminate\Support\Facades\DB::table('pelicula_personal')
+                ->where('id', $pivot_id)
+                ->delete();
+
+            if ($eliminado) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Talento removido del reparto correctamente.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se encontró el registro para eliminar.'
+            ], 404);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al remover talento.'], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Error crítico al remover talento.'
+            ], 500);
         }
     }
 }
