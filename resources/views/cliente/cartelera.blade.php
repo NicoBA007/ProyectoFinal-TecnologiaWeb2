@@ -114,6 +114,7 @@
 
                 <div class="relative group">
                     @if (count($celebridades) > 5)
+                        {{-- Botones de navegación (se mantienen igual) --}}
                         <div
                             class="absolute w-full top-[64px] -translate-y-1/2 flex justify-between pointer-events-none z-40">
                             <button @click="scrollLeft()"
@@ -135,19 +136,28 @@
 
                     <div x-ref="container" @scroll="updateProgress()"
                         class="flex overflow-x-auto gap-10 pb-6 scrollbar-hide snap-x scroll-smooth justify-start">
+
                         @foreach ($celebridades->take(10) as $actor)
-                            <div class="flex flex-col items-center w-[140px] flex-none snap-center group/actor">
+                            {{-- AQUÍ EL CAMBIO: Envolvemos todo en el enlace --}}
+                            <a href="{{ route('celebridades.show', $actor['id_persona']) }}"
+                                class="flex flex-col items-center w-[140px] flex-none snap-center group/actor transition-transform hover:scale-105">
+
                                 <div
                                     class="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-gray-800 group-hover/actor:border-red-600 transition-all duration-500 shadow-lg">
                                     <img src="{{ $actor['foto_url'] }}"
                                         class="w-full h-full object-cover grayscale group-hover/actor:grayscale-0 transition-all duration-700">
                                 </div>
+
                                 <span
-                                    class="mt-4 text-gray-400 group-hover/actor:text-white text-[10px] font-bold uppercase tracking-widest text-center">{{ $actor['nombre_completo'] }}</span>
-                            </div>
+                                    class="mt-4 text-gray-400 group-hover/actor:text-white text-[10px] font-bold uppercase tracking-widest text-center">
+                                    {{ $actor['nombre_completo'] }}
+                                </span>
+                            </a>
                         @endforeach
+
                     </div>
 
+                    {{-- Indicadores (se mantienen igual) --}}
                     @if (count($celebridades) > 5)
                         <div class="flex justify-center gap-2 mt-4">
                             <template x-for="i in 5">
@@ -167,18 +177,19 @@
                 </h2>
 
                 <div class="relative group">
+                    {{-- Botones de Navegación --}}
                     @if (count($generos) > 4)
                         <div
                             class="absolute w-full top-[56px] -translate-y-1/2 flex justify-between pointer-events-none z-40">
                             <button @click="scrollLeft()"
-                                class="pointer-events-auto bg-black/80 p-3 rounded-full text-white border border-white/10 hover:bg-red-600 ml-[-20px]">
+                                class="pointer-events-auto bg-black/80 p-3 rounded-full text-white border border-white/10 hover:bg-red-600 ml-[-20px] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                         d="M15 19l-7-7 7-7" />
                                 </svg>
                             </button>
                             <button @click="scrollRight()"
-                                class="pointer-events-auto bg-black/80 p-3 rounded-full text-white border border-white/10 hover:bg-red-600 mr-[-20px]">
+                                class="pointer-events-auto bg-black/80 p-3 rounded-full text-white border border-white/10 hover:bg-red-600 mr-[-20px] transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                         d="M9 5l7 7-7 7" />
@@ -187,11 +198,16 @@
                         </div>
                     @endif
 
+                    {{-- Contenedor de Géneros --}}
                     <div x-ref="container" @scroll="updateProgress()"
                         class="flex overflow-x-auto gap-4 pb-6 scrollbar-hide snap-x scroll-smooth justify-start">
+
                         @foreach ($generos->take(10) as $genero)
                             @php
                                 $name = $genero['nombre'];
+                                // IMPORTANTE: Asegúrate de que 'id_genero' es la llave correcta en tu DTO
+                                $id = $genero['id_genero'];
+
                                 $colors = [
                                     'from-red-600 to-orange-600',
                                     'from-blue-600 to-cyan-500',
@@ -202,22 +218,36 @@
                                 ];
                                 $estiloColor = $colors[ord($name[0]) % count($colors)];
                             @endphp
-                            <a href="#"
-                                class="w-[160px] md:w-[200px] flex-none h-28 rounded-xl overflow-hidden relative group/gen snap-start">
+
+                            <a href="{{ route('genero.show', $id) }}"
+                                class="w-[160px] md:w-[200px] flex-none h-28 rounded-xl overflow-hidden relative group/gen snap-start transform transition-transform duration-300 hover:scale-105 shadow-lg">
+
+                                {{-- Fondo con Degradado --}}
                                 <div
-                                    class="absolute inset-0 bg-gradient-to-br {{ $estiloColor }} opacity-70 group-hover/gen:opacity-100 transition-all duration-500">
+                                    class="absolute inset-0 bg-gradient-to-br {{ $estiloColor }} opacity-80 group-hover/gen:opacity-100 transition-all duration-500">
                                 </div>
+
+                                {{-- Contenido de la Card --}}
                                 <div class="absolute inset-0 flex flex-col items-center justify-center z-10 p-4">
                                     <div
-                                        class="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center mb-2">
-                                        <span class="text-white text-lg font-bold">+</span></div>
+                                        class="w-9 h-9 rounded-full border-2 border-white/50 flex items-center justify-center mb-2 group-hover/gen:border-white group-hover/gen:bg-white/20 transition-all">
+                                        <span class="text-white text-xl font-bold">+</span>
+                                    </div>
                                     <span
-                                        class="text-white text-[10px] font-black uppercase tracking-widest text-center">{{ $name }}</span>
+                                        class="text-white text-xs font-black uppercase tracking-widest text-center drop-shadow-md">
+                                        {{ $name }}
+                                    </span>
+                                </div>
+
+                                {{-- Brillo sutil al pasar el mouse --}}
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent opacity-0 group-hover/gen:opacity-100 transition-opacity duration-500">
                                 </div>
                             </a>
                         @endforeach
                     </div>
 
+                    {{-- Indicadores de Progreso (Paginación) --}}
                     @if (count($generos) > 4)
                         <div class="flex justify-center gap-2 mt-4">
                             <template x-for="i in 5">
@@ -226,6 +256,65 @@
                             </template>
                         </div>
                     @endif
+                </div>
+            </section>
+            {{-- SECCIÓN CLASIFICACIONES --}}
+            <section x-data="carouselHandler()" x-init="initAutoPlay()" class="mt-16">
+                <h2
+                    class="text-2xl font-black text-white uppercase tracking-widest mb-8 border-l-4 border-red-600 pl-4">
+                    Clasificaciones <span class="text-red-600">Edad</span>
+                </h2>
+
+                <div class="relative group">
+                    @if (count($clasificaciones) > 5)
+                        {{-- Botones de Navegación --}}
+                        <div
+                            class="absolute w-full top-1/2 -translate-y-1/2 flex justify-between pointer-events-none z-40">
+                            <button @click="scrollLeft()"
+                                class="pointer-events-auto bg-black/80 p-3 rounded-full text-white border border-white/10 hover:bg-red-600 ml-[-20px] transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button @click="scrollRight()"
+                                class="pointer-events-auto bg-black/80 p-3 rounded-full text-white border border-white/10 hover:bg-red-600 mr-[-20px] transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
+                        </div>
+                    @endif
+
+                    <div x-ref="container" @scroll="updateProgress()"
+                        class="flex overflow-x-auto gap-6 pb-8 scrollbar-hide snap-x scroll-smooth justify-start">
+
+                        @foreach ($clasificaciones as $clasificacion)
+                            {{-- Tarjeta Principal --}}
+                            <a href="{{ route('clasificacion.show', $clasificacion['id_clasificacion']) }}"
+                                class="flex-none w-36 h-36 md:w-44 md:h-44 bg-[#0a0a0a] border border-zinc-800 rounded-3xl flex flex-col items-center justify-center group/class transition-all duration-500 hover:border-red-600 hover:bg-zinc-900 snap-center shadow-xl p-3">
+
+                                {{-- Contenedor del código (AQUÍ ESTÁ EL CAMBIO IMPORTANTE) --}}
+                                {{-- Eliminado: w-16 md:w-20 --}}
+                                {{-- Añadido: px-4 md:px-6 y w-fit --}}
+                                <div
+                                    class="h-16 md:h-20 w-fit px-4 md:px-6 rounded-2xl border-2 border-zinc-700 flex items-center justify-center group-hover/class:border-red-600 group-hover/class:bg-red-600/10 transition-all duration-500 mb-3 overflow-hidden">
+                                    {{-- Texto del código con nowrap para asegurar una sola fila --}}
+                                    <span
+                                        class="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter whitespace-nowrap">
+                                        {{ $clasificacion['codigo'] }}
+                                    </span>
+                                </div>
+
+                                {{-- Descripción corta --}}
+                                <span
+                                    class="text-[9px] md:text-[10px] text-gray-500 font-bold uppercase tracking-widest text-center leading-tight group-hover/class:text-white transition-colors truncate w-full px-1">
+                                    {{ \Illuminate\Support\Str::limit($clasificacion['descripcion'], 35) }}
+                                </span>
+                            </a>
+                        @endforeach
+                    </div>
                 </div>
             </section>
         </div>

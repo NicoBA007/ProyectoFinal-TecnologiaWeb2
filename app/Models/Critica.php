@@ -29,7 +29,7 @@ class Critica extends Model
     protected function casts(): array
     {
         return [
-            'puntuacion' => 'integer',
+            'puntuacion' => 'float',
             'fecha_publicacion' => 'datetime', // Lo tratamos como un objeto de fecha y hora
         ];
     }
