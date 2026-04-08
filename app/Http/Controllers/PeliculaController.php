@@ -84,6 +84,23 @@ class PeliculaController extends Controller
             }
         }
 
+        // SI LA RUTA ES DE ADMINISTRACIÓN:
+        if ($request->is('admin/*')) {
+            // 1. Cargamos los datos necesarios para los formularios (Selects)
+            $clasificaciones = \App\Models\Clasificacion::where('activo', true)->get();
+            $generos = \App\Models\Genero::where('activo', true)->get();
+            $paises = \App\Models\Pais::where('activo', true)->get();
+
+            // 2. Retornamos la vista de gestión pasando todas las variables
+            return view('peliculas.index', compact(
+                'peliculas', 
+                'clasificaciones', 
+                'generos', 
+                'paises'
+            )); 
+        }
+
+        // SI NO ES ADMIN, MANDA A LA CARTELERA CLIENTE:
         return view('cliente.peliculas', compact('backdrop', 'peliculaAleatoria', 'peliculas'));
     }
 
